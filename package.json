@@ -1,0 +1,14 @@
+{
+  "name": "warden",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^12.12.17",
+    "prettier": "^1.19.1",
+    "typescript": "^3.7.3"
+  },
+  "scripts": {
+    "start": "yarn build && node dist/index.js",
+    "build": "tsc",
+    "format": "prettier --write src/**/*.ts"
+  }
+}
