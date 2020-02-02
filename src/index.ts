@@ -3,6 +3,7 @@ import * as schedule from 'node-schedule'
 
 import { Config, InputResultsByJob } from './types'
 import dummyInput from './inputs/dummy'
+import lobstersInput from './inputs/lobsters'
 import consoleOutput from './outputs/console'
 
 const config: Config = {
@@ -14,6 +15,12 @@ const config: Config = {
       input: dummyInput(),
       outputs: [consoleOutput()],
     },
+    {
+      id: 'lobsters',
+      scheduleAt: '* * * * *',
+      input: lobstersInput({ scoreThreshold: 25 }),
+      outputs: [consoleOutput()],
+    },
   ],
 }
 
@@ -23,13 +30,13 @@ const main = async () => {
   _.forEach(config.jobs, async job => {
     console.log(`initiating ${job.id}`)
 
-    inputResultsByJob[job.id] = await job.input()
+    inputResultsByJob[job.id] = _.keyBy(await job.input(), 'id')
 
     schedule.scheduleJob(job.scheduleAt, async () => {
       console.log(`running ${job.id}`)
 
       const previousInputResults = inputResultsByJob[job.id]
-      const currentInputResults = await job.input()
+      const currentInputResults = _.keyBy(await job.input(), 'id')
 
       const newInputResultIds = _.difference(
         _.map(currentInputResults, 'id'),
@@ -40,18 +47,24 @@ const main = async () => {
         return
       }
 
-      const newInputResults = _.keyBy(
-        _.map(newInputResultIds, id => currentInputResults[id]),
-        'id',
+      const newInputResultsOriginal = _.map(
+        newInputResultIds,
+        id => currentInputResults[id],
       )
+
+      const newInputResults = _.keyBy(newInputResultsOriginal, 'id')
 
       inputResultsByJob[job.id] = { ...currentInputResults, ...newInputResults }
 
       _.forEach(job.outputs, output => {
-        output(newInputResults)
+        output(newInputResultsOriginal)
       })
     })
   })
 }
+
+process.on('SIGINT', () => {
+  process.exit()
+})
 
 main()

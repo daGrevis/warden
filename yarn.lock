@@ -24,6 +24,11 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.26.tgz#213e153babac0ed169d44a6d919501e68f59dea9"
   integrity sha512-UmUm94/QZvU5xLcUlNR8hA7Ac+fGpO1EG/a8bcWVz0P0LqtxFmun9Y2bbtuckwGboWJIT70DoWq1r3hb56n3DA==
 
+"@types/selenium-webdriver@^4.0.6":
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/@types/selenium-webdriver/-/selenium-webdriver-4.0.6.tgz#c5d595de4b0b348020c370c8d335660d290dc877"
+  integrity sha512-We3Ogdn6/EMiVUWyqHBfvLHogkgxhBWrmgayxCj5UqX5D6uVZ+JKr5qOqjGig+aHXVxDTnyisVF+t1vVINKD+w==
+
 balanced-match@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"

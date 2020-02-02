@@ -1,14 +1,19 @@
-type Input = () => () => Promise<InputResults>
+type Input<Options = undefined> = (
+  options?: Options,
+) => () => Promise<InputResults>
 
 type InputResult = {
   id: string
   url: string
   name: string
+  score?: number
 }
 
-type InputResults = { [id: string]: InputResult }
+type InputResults = InputResult[]
 
-type InputResultsByJob = { [jobId: string]: InputResults }
+type InputResultsByJob = {
+  [jobId: string]: { [resultId: string]: InputResult }
+}
 
 type Output = () => (inputResults: InputResults) => Promise<void>
 
