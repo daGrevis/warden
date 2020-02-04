@@ -1,8 +1,8 @@
 import * as _ from 'lodash'
-import { Builder, By } from 'selenium-webdriver'
-import * as firefox from 'selenium-webdriver/firefox'
+import { By } from 'selenium-webdriver'
 
 import { Input } from '../types'
+import withSelenium from '../withSelenium'
 
 type Options = {
   scoreThreshold?: number
@@ -18,12 +18,7 @@ type Story = {
 const input: Input<Options> = options => async () => {
   let stories: Story[] = []
 
-  const driver = await new Builder()
-    .forBrowser('firefox')
-    .setFirefoxOptions(new firefox.Options().headless())
-    .build()
-
-  try {
+  await withSelenium(async driver => {
     await driver.get('http://lobste.rs/')
 
     const $stories = await driver
@@ -48,9 +43,7 @@ const input: Input<Options> = options => async () => {
     if (scoreThreshold) {
       stories = _.filter(stories, story => story.score >= scoreThreshold)
     }
-  } finally {
-    await driver.quit()
-  }
+  })
 
   return stories
 }
