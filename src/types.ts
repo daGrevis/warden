@@ -1,5 +1,5 @@
 type Input<Options = undefined> = (
-  options?: Options,
+  options: Options,
 ) => () => Promise<InputResults>
 
 type InputResult = {
@@ -15,17 +15,20 @@ type InputResultsByJob = {
   [jobId: string]: { [resultId: string]: InputResult }
 }
 
-type Output = () => (inputResults: InputResults) => Promise<void>
+type Output = () => (job: Job, inputResults: InputResults) => Promise<void>
 
 type Job = {
   id: string
-  scheduleAt: string
+  scheduleAt: string | null
   input: ReturnType<Input>
   outputs: ReturnType<Output>[]
 }
 
 type Config = {
-  driverBrowser: string
+  driver?: {
+    browser?: 'chrome' | 'firefox'
+    headless?: boolean
+  }
   jobs: Job[]
 }
 

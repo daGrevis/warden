@@ -1,7 +1,13 @@
 import * as _ from 'lodash'
 
-import { InputResults } from '../types'
+import { Output } from '../types'
 
-export default () => async (inputResults: InputResults) => {
-  console.log(`new IDs: ${_.map(inputResults, 'id').join(', ')}`)
+const output: Output = () => async (job, inputResults) => {
+  if (inputResults.length === 0) {
+    return
+  }
+
+  console.log(job.id, inputResults)
 }
+
+export default output

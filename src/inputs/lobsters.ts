@@ -15,18 +15,14 @@ type Story = {
   score: number
 }
 
-const input: Input<Options> = options => async () => {
+const input: Input<Options> = (options?: Options) => async () => {
   let stories: Story[] = []
 
   await withSelenium(async driver => {
     await driver.get('http://lobste.rs/')
 
-    const $stories = await driver
-      .findElement(By.className('stories'))
-      .findElements(By.className('story'))
-
     stories = await Promise.all(
-      $stories.map(async $ => {
+      _.map(await driver.findElements(By.className('story')), async $ => {
         const $url = await $.findElement(By.className('u-url'))
         return {
           id: await $.getAttribute('data-shortid'),
