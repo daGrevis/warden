@@ -1,6 +1,8 @@
-type Input<Options = undefined> = (
-  options: Options,
-) => () => Promise<InputResults>
+type OptionalArgs<T> = T extends undefined ? [] : [T]
+
+interface Input<Options = undefined> {
+  (...args: OptionalArgs<Options>): () => Promise<InputResults>
+}
 
 type InputResult = {
   id: string
@@ -15,7 +17,12 @@ type InputResultsByJob = {
   [jobId: string]: { [resultId: string]: InputResult }
 }
 
-type Output = () => (job: Job, inputResults: InputResults) => Promise<void>
+interface Output<Options = undefined> {
+  (...args: OptionalArgs<Options>): (
+    job: Job,
+    inputResults: InputResults,
+  ) => Promise<void>
+}
 
 type Job = {
   id: string

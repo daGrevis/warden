@@ -1,6 +1,8 @@
+import { Input } from '../types'
+
 let counter = 0
 
-export default () => async () => {
+const input: Input = () => async () => {
   if (counter === 1) {
     return [
       {
@@ -26,3 +28,5 @@ export default () => async () => {
     },
   ]
 }
+
+export default input
