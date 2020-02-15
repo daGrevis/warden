@@ -1,6 +1,6 @@
 import { WebDriver, Builder, Capabilities } from 'selenium-webdriver'
-import * as firefox from 'selenium-webdriver/firefox'
-import * as chrome from 'selenium-webdriver/chrome'
+import firefox from 'selenium-webdriver/firefox'
+import chrome from 'selenium-webdriver/chrome'
 
 import config from './config'
 

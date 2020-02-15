@@ -1,8 +1,13 @@
-import * as _ from 'lodash'
+import _ from 'lodash'
 import * as schedule from 'node-schedule'
 
-import { InputResultsByJob } from './types'
+import { Job, InputResults, InputResultsByJob } from './types'
 import config from './config'
+
+const runInput = async (job: Job) => job.input()
+
+const runOutputs = async (job: Job, inputResults: InputResults) =>
+  Promise.all(_.map(job.outputs, output => output(job, inputResults)))
 
 const main = async () => {
   const inputResultsByJob: InputResultsByJob = {}
@@ -10,7 +15,15 @@ const main = async () => {
   _.forEach(config.jobs, async job => {
     console.log(`starting ${job.id}`)
 
-    inputResultsByJob[job.id] = _.keyBy(await job.input(), 'id')
+    const startInputResults = await runInput(job)
+
+    inputResultsByJob[job.id] = _.keyBy(startInputResults, 'id')
+
+    if (job.runOutputsAtStart) {
+      console.log(`running ${job.id} at start`)
+
+      await runOutputs(job, startInputResults)
+    }
 
     if (job.scheduleAt) {
       console.log(`scheduling ${job.id} at ${job.scheduleAt}`)
@@ -19,7 +32,7 @@ const main = async () => {
         console.log(`running ${job.id}`)
 
         const previousInputResults = inputResultsByJob[job.id]
-        const currentInputResults = _.keyBy(await job.input(), 'id')
+        const currentInputResults = _.keyBy(await runInput(job), 'id')
 
         const newInputResultIds = _.difference(
           _.map(currentInputResults, 'id'),
@@ -37,11 +50,12 @@ const main = async () => {
 
         const newInputResults = _.keyBy(newInputResultsOriginal, 'id')
 
-        inputResultsByJob[job.id] = { ...currentInputResults, ...newInputResults }
+        inputResultsByJob[job.id] = {
+          ...currentInputResults,
+          ...newInputResults,
+        }
 
-        _.forEach(job.outputs, output => {
-          output(job, newInputResultsOriginal)
-        })
+        await runOutputs(job, newInputResultsOriginal)
       })
     }
   })

@@ -1,4 +1,4 @@
-import * as _ from 'lodash'
+import _ from 'lodash'
 import { By } from 'selenium-webdriver'
 
 import { Input } from '../types'
@@ -12,10 +12,12 @@ type Story = {
   id: string
   url: string
   name: string
-  score: number
+  extra: {
+    score: number
+  }
 }
 
-const input: Input<Options> = (options?: Options) => async () => {
+const input: Input<Options | undefined> = (options?: Options) => async () => {
   let stories: Story[] = []
 
   await withSelenium(async driver => {
@@ -28,16 +30,18 @@ const input: Input<Options> = (options?: Options) => async () => {
           id: await $.getAttribute('data-shortid'),
           url: await $url.getAttribute('href'),
           name: await $url.getText(),
-          score: _.parseInt(
-            await $.findElement(By.className('score')).getText(),
-          ),
+          extra: {
+            score: _.parseInt(
+              await $.findElement(By.className('score')).getText(),
+            ),
+          },
         }
       }),
     )
 
     const scoreThreshold = options?.scoreThreshold
     if (scoreThreshold) {
-      stories = _.filter(stories, story => story.score >= scoreThreshold)
+      stories = _.filter(stories, story => story.extra.score >= scoreThreshold)
     }
   })
 
@@ -45,3 +49,4 @@ const input: Input<Options> = (options?: Options) => async () => {
 }
 
 export default input
+export { Options }

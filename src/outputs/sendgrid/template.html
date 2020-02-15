@@ -1,0 +1,74 @@
+<mjml>
+  <mj-head>
+    <mj-title>{{job.name}}</mj-title>
+
+    <mj-attributes>
+      <mj-text font-family="'Open Sans', Helvetica, Arial, sans-serif" font-size="14px" />
+      <mj-divider border-width="1px" border-style="dashed" border-color="lightgrey" />
+    </mj-attributes>
+
+    <mj-style inline="inline">
+      h2 a {
+        text-decoration: none;
+        color: black;
+      }
+
+      ul {
+        padding-left: 0;
+        list-style: none;
+      }
+    </mj-style>
+  </mj-head>
+
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <h1>
+            {{job.name}}
+          </h1>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    {{#each inputResults}}
+      <mj-section>
+        <mj-column>
+          <mj-text>
+            <h2>
+              <a href="{{this.url}}" target="_blank">
+                {{this.name}}
+              </a>
+            </h2>
+          </mj-text>
+
+          {{#if this.imageUrl}}
+            <mj-image src="{{this.imageUrl}}" href="{{this.url}}" />
+          {{/if}}
+
+          {{#if this.description}}
+            <mj-text>
+              {{this.description}}
+            </mj-text>
+          {{/if}}
+
+          {{#if this.extra}}
+            <mj-text>
+              <ul>
+                {{#each this.extra}}
+                  <li>
+                    <strong>{{@key}}</strong>: {{this}}
+                  </li>
+                {{/each}}
+              </ul>
+            </mj-text>
+          {{/if}}
+
+          {{#unless @last}}
+            <mj-divider padding-top="50px" />
+          {{/unless}}
+        </mj-column>
+      </mj-section>
+    {{/each}}
+  </mj-body>
+</mjml>

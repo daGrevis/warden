@@ -8,7 +8,9 @@ type InputResult = {
   id: string
   url: string
   name: string
-  score?: number
+  description?: string
+  imageUrl?: string
+  extra?: { [key: string]: any }
 }
 
 type InputResults = InputResult[]
@@ -26,9 +28,11 @@ interface Output<Options = undefined> {
 
 type Job = {
   id: string
+  name: string
   scheduleAt: string | null
   input: ReturnType<Input>
   outputs: ReturnType<Output>[]
+  runOutputsAtStart?: boolean
 }
 
 type Config = {
@@ -40,6 +44,7 @@ type Config = {
 }
 
 export {
+  OptionalArgs,
   Input,
   InputResult,
   InputResults,

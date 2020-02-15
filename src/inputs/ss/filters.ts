@@ -39,8 +39,8 @@ type AllRequiredFilterOptions = {
   floorMax: number
 
   // Transport
-  engineSizeMin: number
-  engineSizeMax: number
+  engineSizeMin: number | string
+  engineSizeMax: number | string
   fuelType: FuelType
   transmission: Transmission
   bodyType: BodyType

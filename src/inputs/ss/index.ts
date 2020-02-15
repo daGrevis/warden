@@ -1,4 +1,4 @@
-import * as _ from 'lodash'
+import _ from 'lodash'
 import { By, WebDriver, WebElement } from 'selenium-webdriver'
 
 import { Input } from '../../types'
@@ -17,7 +17,9 @@ type Result = {
   name: string
   description: string
   imageUrl: string
-  priceText: string
+  extra: {
+    price: string
+  }
 }
 
 type Filter = FilterDefinition & { value: any }
@@ -26,9 +28,10 @@ const HOST = 'https://www.ss.com/'
 
 const applyFilters = async (
   driver: WebDriver,
-  filterOptions: FilterOptions,
+  filterOptions?: FilterOptions,
 ) => {
-  let needsSubmitting = false
+  // Always submit just to be sure because sections like transport/cars don't show the results until form has been submitted.
+  let needsSubmitting = true
 
   const filters = _.map<any, Filter>(
     filterOptions,
@@ -124,7 +127,7 @@ const parseResults = async (driver: WebDriver, section: string) => {
           const cells = await $row.findElements(By.tagName('td'))
 
           const $priceCell = _.last(cells) as WebElement
-          const priceText = await (
+          const price = await (
             await $priceCell.findElement(By.tagName('a'))
           ).getText()
 
@@ -134,7 +137,9 @@ const parseResults = async (driver: WebDriver, section: string) => {
             name,
             description,
             imageUrl,
-            priceText,
+            extra: {
+              price,
+            },
           }
         },
       ),
@@ -149,9 +154,7 @@ const input: Input<Options> = (options: Options) => async () => {
   await withSelenium(async driver => {
     await driver.get(`${HOST}${options.section}/filter/`)
 
-    if (options.filters) {
-      await applyFilters(driver, options.filters)
-    }
+    await applyFilters(driver, options.filters)
 
     results = await parseResults(driver, options.section)
   })
