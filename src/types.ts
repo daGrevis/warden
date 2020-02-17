@@ -1,10 +1,10 @@
 type OptionalArgs<T> = T extends undefined ? [] : [T]
 
 interface Input<Options = undefined> {
-  (...args: OptionalArgs<Options>): () => Promise<InputResults>
+  (...args: OptionalArgs<Options>): (job: Job) => Promise<Results>
 }
 
-type InputResult = {
+type Result = {
   id: string
   url: string
   name: string
@@ -13,16 +13,20 @@ type InputResult = {
   extra?: { [key: string]: any }
 }
 
-type InputResults = InputResult[]
+type Results = Result[]
 
-type InputResultsByJob = {
-  [jobId: string]: { [resultId: string]: InputResult }
+type State = {
+  [jobId: string]: JobState
+}
+
+type JobState = {
+  results: { [resultId: string]: Result }
 }
 
 interface Output<Options = undefined> {
   (...args: OptionalArgs<Options>): (
     job: Job,
-    inputResults: InputResults,
+    results: Results,
   ) => Promise<void>
 }
 
@@ -30,7 +34,7 @@ type Job = {
   id: string
   name: string
   scheduleAt: string | null
-  input: ReturnType<Input>
+  inputs: ReturnType<Input>[]
   outputs: ReturnType<Output>[]
   runOutputsAtStart?: boolean
 }
@@ -46,9 +50,10 @@ type Config = {
 export {
   OptionalArgs,
   Input,
-  InputResult,
-  InputResults,
-  InputResultsByJob,
+  Result,
+  Results,
+  State,
+  JobState,
   Output,
   Job,
   Config,

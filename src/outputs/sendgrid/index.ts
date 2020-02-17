@@ -30,7 +30,7 @@ const MJML_OPTIONS = {
 
 const output: Output<Options> = (options: Options) => async (
   job,
-  inputResults,
+  results,
 ) => {
   const { apiKey, sender, recipients, debug } = options
   const template = options.template ?? './template.html'
@@ -43,7 +43,7 @@ const output: Output<Options> = (options: Options) => async (
     FILE_OPTIONS,
   )
 
-  let html = handlebars.compile(templateFile)({ job, inputResults })
+  let html = handlebars.compile(templateFile)({ job, results })
 
   if (asMjml) {
     const mjmlResult = mjml2html(

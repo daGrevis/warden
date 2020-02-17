@@ -1,28 +1,35 @@
 import _ from 'lodash'
 import * as schedule from 'node-schedule'
 
-import { Job, InputResults, InputResultsByJob } from './types'
+import { State, Job, Results } from './types'
 import config from './config'
 
-const runInput = async (job: Job) => job.input()
+const runInputs = async (job: Job) => {
+  const results = await Promise.all(
+    _.map(job.inputs, (input): Promise<Results> => input(job)),
+  )
+  return _.uniqBy(_.flatten(results), 'id')
+}
 
-const runOutputs = async (job: Job, inputResults: InputResults) =>
-  Promise.all(_.map(job.outputs, output => output(job, inputResults)))
+const runOutputs = async (job: Job, results: Results) =>
+  Promise.all(_.map(job.outputs, output => output(job, results)))
 
 const main = async () => {
-  const inputResultsByJob: InputResultsByJob = {}
+  const state: State = {}
 
-  _.forEach(config.jobs, async job => {
+  for (const job of config.jobs) {
     console.log(`starting ${job.id}`)
 
-    const startInputResults = await runInput(job)
+    const startResults = await runInputs(job)
 
-    inputResultsByJob[job.id] = _.keyBy(startInputResults, 'id')
+    state[job.id] = {
+      results: _.keyBy(startResults, 'id'),
+    }
 
     if (job.runOutputsAtStart) {
       console.log(`running ${job.id} at start`)
 
-      await runOutputs(job, startInputResults)
+      await runOutputs(job, startResults)
     }
 
     if (job.scheduleAt) {
@@ -31,34 +38,32 @@ const main = async () => {
       schedule.scheduleJob(job.scheduleAt, async () => {
         console.log(`running ${job.id}`)
 
-        const previousInputResults = inputResultsByJob[job.id]
-        const currentInputResults = _.keyBy(await runInput(job), 'id')
+        const results = await runInputs(job)
 
-        const newInputResultIds = _.difference(
-          _.map(currentInputResults, 'id'),
-          _.map(previousInputResults, 'id'),
+        const resultsById = _.keyBy(results, 'id')
+
+        const newIds = _.difference(
+          _.map(results, 'id'),
+          _.map(state[job.id].results, 'id'),
         )
 
-        if (newInputResultIds.length === 0) {
+        if (newIds.length === 0) {
           return
         }
 
-        const newInputResultsOriginal = _.map(
-          newInputResultIds,
-          id => currentInputResults[id],
-        )
+        const newResults = _.map(newIds, id => resultsById[id])
 
-        const newInputResults = _.keyBy(newInputResultsOriginal, 'id')
-
-        inputResultsByJob[job.id] = {
-          ...currentInputResults,
-          ...newInputResults,
+        state[job.id] = {
+          results: {
+            ...resultsById,
+            ..._.keyBy(newResults, 'id'),
+          },
         }
 
-        await runOutputs(job, newInputResultsOriginal)
+        await runOutputs(job, newResults)
       })
     }
-  })
+  }
 }
 
 process.on('SIGINT', () => {

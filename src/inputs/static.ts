@@ -1,7 +1,7 @@
-import { Input, InputResults } from '../types'
+import { Input, Results } from '../types'
 
 type Options = {
-  data?: InputResults[]
+  data?: Results[]
 }
 
 const input: Input<Options | undefined> = (options?: Options) => {
