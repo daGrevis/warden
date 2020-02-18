@@ -5,7 +5,6 @@ import { Input } from '../types'
 import withSelenium from '../withSelenium'
 
 type Options = {
-  scoreThreshold?: number
 }
 
 type Story = {
@@ -38,11 +37,6 @@ const input: Input<Options | undefined> = (options?: Options) => async () => {
         }
       }),
     )
-
-    const scoreThreshold = options?.scoreThreshold
-    if (scoreThreshold) {
-      stories = _.filter(stories, story => story.extra.score >= scoreThreshold)
-    }
   })
 
   return stories

@@ -8,6 +8,7 @@ const runInputs = async (job: Job) => {
   const allResults = await Promise.all(
     _.map(job.inputs, (input): Promise<Results> => input(job)),
   )
+
   return _.flatMap(allResults, (results, index) => {
     return _.map(results, result => ({
       ...result,
@@ -18,7 +19,12 @@ const runInputs = async (job: Job) => {
 }
 
 const runOutputs = async (job: Job, results: Results) => {
-  return Promise.all(_.map(job.outputs, output => output(job, results)))
+  let filteredResults = results
+  for (const filter of job.filters ?? []) {
+    filteredResults = await filter(filteredResults)
+  }
+
+  return Promise.all(_.map(job.outputs, output => output(job, filteredResults)))
 }
 
 const main = async () => {

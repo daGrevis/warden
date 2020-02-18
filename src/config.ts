@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 import { Config } from './types'
 import staticInput from './inputs/static'
 import lobstersInput from './inputs/lobsters'
@@ -110,6 +112,16 @@ const config: Config = {
             roomsMin: 3,
           },
         }),
+      ],
+      outputs: [consoleOutput()],
+    },
+
+    {
+      id: 'lobsters',
+      name: 'Lobsters',
+      inputs: [lobstersInput()],
+      filters: [
+        async results => _.filter(results, result => result.extra?.score >= 25),
       ],
       outputs: [consoleOutput()],
     },
