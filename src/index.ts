@@ -5,14 +5,21 @@ import { State, Job, Results } from './types'
 import config from './config'
 
 const runInputs = async (job: Job) => {
-  const results = await Promise.all(
+  const allResults = await Promise.all(
     _.map(job.inputs, (input): Promise<Results> => input(job)),
   )
-  return _.uniqBy(_.flatten(results), 'id')
+  return _.flatMap(allResults, (results, index) => {
+    return _.map(results, result => ({
+      ...result,
+      // Prefix ID to avoid duplicates between inputs.
+      id: `${index}-${result.id}`,
+    }))
+  })
 }
 
-const runOutputs = async (job: Job, results: Results) =>
-  Promise.all(_.map(job.outputs, output => output(job, results)))
+const runOutputs = async (job: Job, results: Results) => {
+  return Promise.all(_.map(job.outputs, output => output(job, results)))
+}
 
 const main = async () => {
   const state: State = {}
