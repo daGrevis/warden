@@ -28,6 +28,8 @@ const input: Input<Options | undefined> = (options?: Options) => async () => {
     stories = await Promise.all(
       _.map(await driver.findElements(By.className('story')), async $ => {
         const $url = await $.findElement(By.className('u-url'))
+        const $commentsUrl = await $.findElement(By.css('.comments_label a'))
+
         return {
           id: await $.getAttribute('data-shortid'),
           url: await $url.getAttribute('href'),
@@ -36,6 +38,7 @@ const input: Input<Options | undefined> = (options?: Options) => async () => {
             score: _.parseInt(
               await $.findElement(By.className('score')).getText(),
             ),
+            commentsUrl: await $commentsUrl.getAttribute('href'),
           },
         }
       }),
