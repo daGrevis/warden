@@ -22,7 +22,6 @@ const config: Config = {
     {
       id: 'static',
       name: 'SS cars',
-      scheduleAt: null,
       inputs: [
         staticInput({
           data: [
@@ -65,7 +64,6 @@ const config: Config = {
         }),
       ],
       outputs: [consoleOutput()],
-      runOutputsAtStart: true,
     },
 
     {
@@ -102,7 +100,6 @@ const config: Config = {
     {
       id: 'ss-flats-riga',
       name: 'SS flats/riga',
-      scheduleAt: null,
       inputs: [
         ssInput({
           section: 'real-estate/flats/riga',

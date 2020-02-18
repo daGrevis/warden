@@ -33,10 +33,9 @@ interface Output<Options = undefined> {
 type Job = {
   id: string
   name: string
-  scheduleAt: string | null
+  scheduleAt?: string
   inputs: ReturnType<Input>[]
   outputs: ReturnType<Output>[]
-  runOutputsAtStart?: boolean
 }
 
 type Config = {
