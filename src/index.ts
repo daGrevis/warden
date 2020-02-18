@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import * as schedule from 'node-schedule'
 
-import { State, Job, Results } from './types'
+import { Config, State, Job, Results } from './types'
 import config from './config'
 
 const runInputs = async (job: Job) => {
@@ -27,11 +27,23 @@ const runOutputs = async (job: Job, results: Results) => {
   return Promise.all(_.map(job.outputs, output => output(job, filteredResults)))
 }
 
+const checkConfig = (config: Config) => {
+  const jobIds = new Set()
+  for (const job of config.jobs) {
+    if (jobIds.has(job.id)) {
+      throw Error(`Job ${job.id} is already defined`)
+    }
+    jobIds.add(job.id)
+  }
+}
+
 const main = async () => {
   const state: State = {}
 
+  checkConfig(config)
+
   for (const job of config.jobs) {
-    console.log(`starting ${job.id}`)
+    console.log(`Starting ${job.id}`)
 
     const startResults = await runInputs(job)
 
@@ -40,14 +52,14 @@ const main = async () => {
     }
 
     if (!job.scheduleAt) {
-      console.log(`running ${job.id} at start once`)
+      console.log(`Running ${job.id} at start once`)
 
       await runOutputs(job, startResults)
     } else {
-      console.log(`scheduling ${job.id} at ${job.scheduleAt}`)
+      console.log(`Scheduling ${job.id} at ${job.scheduleAt}`)
 
       schedule.scheduleJob(job.scheduleAt, async () => {
-        console.log(`running ${job.id}`)
+        console.log(`Running ${job.id} as scheduled`)
 
         const results = await runInputs(job)
 

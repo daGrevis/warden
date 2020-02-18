@@ -110,6 +110,7 @@ const config: Config = {
             priceMax: 900,
             floorMin: 5,
             roomsMin: 3,
+            areaMin: 80,
           },
         }),
       ],
