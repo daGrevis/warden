@@ -49,4 +49,3 @@ const input: Input<Options | undefined> = (options?: Options) => async () => {
 }
 
 export default input
-export { Options }

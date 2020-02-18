@@ -2,6 +2,7 @@
   "name": "warden",
   "dependencies": {
     "@sendgrid/mail": "^6.5.2",
+    "dotenv": "^8.2.0",
     "handlebars": "^4.7.3",
     "lodash": "^4.17.15",
     "mjml": "^4.5.1",
@@ -9,6 +10,7 @@
     "selenium-webdriver": "^4.0.0-alpha.5"
   },
   "devDependencies": {
+    "@types/dotenv": "^8.2.0",
     "@types/lodash": "^4.14.149",
     "@types/mjml": "^4.0.3",
     "@types/node": "^12.12.17",
@@ -19,7 +21,7 @@
     "typescript": "^3.7.3"
   },
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "ts-node -r dotenv/config src/index.ts",
     "typecheck": "tsc --noEmit",
     "formatcheck": "prettier --check src/**/*.ts",
     "format": "prettier --write src/**/*.ts",

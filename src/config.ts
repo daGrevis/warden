@@ -10,7 +10,7 @@ import sendgridOutput from './outputs/sendgrid'
 import withOptions from './withOptions'
 
 const mySendgridOutput = withOptions(sendgridOutput, {
-  apiKey: 'sekret',
+  apiKey: process.env.SENDGRID_API_KEY,
   sender: 'warden@dagrev.is',
 })
 
