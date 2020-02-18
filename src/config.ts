@@ -117,11 +117,21 @@ const config: Config = {
     },
 
     {
-      id: 'lobsters',
-      name: 'Lobsters',
+      id: 'lobsters-25',
+      name: 'Lobsters 25+',
       inputs: [lobstersInput()],
       filters: [
         async results => _.filter(results, result => result.extra?.score >= 25),
+      ],
+      outputs: [consoleOutput()],
+    },
+
+    {
+      id: 'lobsters-controversial',
+      name: 'Lobsters Controversial',
+      inputs: [lobstersInput({ section: 'recent' })],
+      filters: [
+        async results => _.filter(results, result => result.extra?.score <= -3),
       ],
       outputs: [consoleOutput()],
     },

@@ -5,6 +5,7 @@ import { Input } from '../types'
 import withSelenium from '../withSelenium'
 
 type Options = {
+  section?: 'hottest' | 'recent' | 'newest'
 }
 
 type Story = {
@@ -17,10 +18,12 @@ type Story = {
 }
 
 const input: Input<Options | undefined> = (options?: Options) => async () => {
+  const section = options?.section ?? 'hottest'
+
   let stories: Story[] = []
 
   await withSelenium(async driver => {
-    await driver.get('http://lobste.rs/')
+    await driver.get(`http://lobste.rs/${section === 'hottest' ? '' : section}`)
 
     stories = await Promise.all(
       _.map(await driver.findElements(By.className('story')), async $ => {
