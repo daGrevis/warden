@@ -27,4 +27,4 @@ USER nonroot
 
 # Can't use yarn start because https://github.com/yarnpkg/yarn/issues/4667
 # ts-node not in PATH
-CMD node_modules/ts-node/dist/bin.js --transpile-only src/index.ts
+CMD node_modules/ts-node/dist/bin.js --transpile-only -r dotenv/config src/index.ts
