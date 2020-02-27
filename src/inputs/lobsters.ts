@@ -1,8 +1,7 @@
 import _ from 'lodash'
-import { By } from 'selenium-webdriver'
 
 import { Input } from '../types'
-import withSelenium from '../withSelenium'
+import withBrowser from '../withBrowser'
 
 type Options = {
   section?: 'hottest' | 'recent' | 'newest'
@@ -22,23 +21,26 @@ const input: Input<Options | undefined> = (options?: Options) => async () => {
 
   let stories: Story[] = []
 
-  await withSelenium(async driver => {
-    await driver.get(`http://lobste.rs/${section === 'hottest' ? '' : section}`)
+  await withBrowser(async ({ page }) => {
+    await page.goto(`http://lobste.rs/${section === 'hottest' ? '' : section}`)
 
     stories = await Promise.all(
-      _.map(await driver.findElements(By.className('story')), async $ => {
-        const $url = await $.findElement(By.className('u-url'))
-        const $commentsUrl = await $.findElement(By.css('.comments_label a'))
+      _.map(await page.$$('.story'), async $story => {
+        const $url = await $story.$('.u-url')
+        const $commentsUrl = await $story.$('.comments_label a')
+        const $score = await $story.$('.score')
 
         return {
-          id: await $.getAttribute('data-shortid'),
-          url: await $url.getAttribute('href'),
-          name: await $url.getText(),
+          id: await $story!.evaluate($ => $.getAttribute('data-shortid')!),
+          url: await $url!.evaluate(
+            $ => ($ as HTMLAnchorElement).getAttribute('href')!,
+          ),
+          name: await $url!.evaluate($ => $.textContent!),
           extra: {
-            score: _.parseInt(
-              await $.findElement(By.className('score')).getText(),
+            score: _.parseInt(await $score!.evaluate($ => $.textContent!)),
+            commentsUrl: await $commentsUrl!.evaluate($ =>
+              ($ as HTMLAnchorElement).getAttribute('href'),
             ),
-            commentsUrl: await $commentsUrl.getAttribute('href'),
           },
         }
       }),

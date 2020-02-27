@@ -1,14 +1,39 @@
-FROM node:12-alpine
+FROM ubuntu:bionic
+
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
+    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+    apt-get update && \
+    apt-get install -y \
+        nodejs \
+        yarn \
+        # Based on https://hub.docker.com/r/arjun27/playwright-bionic
+        libwoff1 \
+        libopus0 \
+        libwebp6 \
+        libwebpdemux2 \
+        libenchant1c2a \
+        libgudev-1.0-0 \
+        libsecret-1-0 \
+        libhyphen0 \
+        libgdk-pixbuf2.0-0 \
+        libegl1 \
+        libnotify4 \
+        libxslt1.1 \
+        libevent-2.1-6 \
+        libgles2 \
+        libgl1 \
+        libegl1 \
+        libvpx5 \
+        libnss3 \
+        libxss1 \
+        libasound2 \
+        libdbus-glib-1-2 \
+        libxt6
 
 ENV NODE_ENV=production
-
-# https://stackoverflow.com/a/58771365/458610
-RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
-    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.30-r0/glibc-2.30-r0.apk && \
-    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.30-r0/glibc-bin-2.30-r0.apk && \
-    wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz && \
-    tar -zxf geckodriver-v0.26.0-linux64.tar.gz -C /usr/bin && \
-    apk add --no-cache ttf-freefont firefox-esr glibc-2.30-r0.apk glibc-bin-2.30-r0.apk
 
 RUN mkdir -p /usr/src/app
 COPY package.json /usr/src/app
@@ -21,9 +46,6 @@ RUN yarn install && \
 
 COPY src/ /usr/src/app/src
 COPY tsconfig.json /usr/src/app
-
-RUN adduser -D nonroot
-USER nonroot
 
 # Can't use yarn start because https://github.com/yarnpkg/yarn/issues/4667
 # ts-node not in PATH

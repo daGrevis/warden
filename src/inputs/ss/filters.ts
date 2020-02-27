@@ -31,8 +31,8 @@ type AllRequiredFilterOptions = {
   yearMax: number
 
   // Real estate
-  roomsMin: number
-  roomsMax: number
+  roomsMin: 1 | 2 | 3 | 4 | 5 | 6
+  roomsMax: 1 | 2 | 3 | 4 | 5 | 6
   areaMin: number
   areaMax: number
   floorMin: number

@@ -44,9 +44,10 @@ type Job = {
 }
 
 type Config = {
-  driver?: {
-    browser?: 'chrome' | 'firefox'
+  browser?: {
     headless?: boolean
+    slowMo?: number
+    debug?: boolean
   }
   jobs: Job[]
 }

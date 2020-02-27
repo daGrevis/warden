@@ -1,9 +1,8 @@
 import _ from 'lodash'
-import { By, WebDriver, WebElement } from 'selenium-webdriver'
+import { Page, ElementHandle } from 'playwright'
 
 import { Input } from '../../types'
-import withSelenium from '../../withSelenium'
-import untilReload from '../../untilReload'
+import withBrowser from '../../withBrowser'
 import { FilterOptions, FilterDefinition, filterDefinitions } from './filters'
 
 type Options = {
@@ -24,12 +23,9 @@ type Result = {
 
 type Filter = FilterDefinition & { value: any }
 
-const HOST = 'https://www.ss.com/'
+const HOST = 'https://www.ss.com'
 
-const applyFilters = async (
-  driver: WebDriver,
-  filterOptions?: FilterOptions,
-) => {
+const applyFilters = async (page: Page, filterOptions?: FilterOptions) => {
   // Always submit just to be sure because sections like transport/cars don't show the results until form has been submitted.
   let needsSubmitting = true
 
@@ -45,30 +41,27 @@ const applyFilters = async (
   )
 
   for (const filter of filters) {
-    const $ = await driver.findElement(By.css(filter.selector))
-    const tagName = await $.getTagName()
+    const $filter = await page.$(filter.selector)
+    const tagName = await $filter!.evaluate($ => $.tagName)
 
-    if (tagName === 'input') {
-      await $.sendKeys(filter.value)
+    if (tagName === 'INPUT') {
+      await $filter!.type(`${filter.value}`)
 
       needsSubmitting = true
-    } else if (tagName === 'select') {
-      const $option = await $.findElement(
-        By.css(`option[value='${filter.value}']`),
-      )
-      $option.click()
-
-      await untilReload(driver)
+    } else if (tagName === 'SELECT') {
+      await Promise.all([
+        page.waitForNavigation(),
+        $filter!.select(`${filter.value}`),
+      ])
 
       needsSubmitting = false
     }
   }
 
   if (needsSubmitting) {
-    const $submitButton = await driver.findElement(By.className('s12'))
-    $submitButton.click()
+    const $submitButton = await page.$('.s12')
 
-    await untilReload(driver)
+    await Promise.all([page.waitForNavigation(), $submitButton!.click()])
   }
 }
 
@@ -77,8 +70,8 @@ const getName = (url: string, section: string) => {
 
   // Remove host.
   name = name.slice(HOST.length)
-  // Remove msg/{language}/.
-  name = name.replace(/^msg\/[^\/]+\//, '')
+  // Remove /msg/{language}/.
+  name = name.replace(/^\/msg\/[^\/]+\//, '')
   // Remove /{id}.html.
   name = name.replace(/\/[^\/]+$/, '')
 
@@ -91,45 +84,49 @@ const getName = (url: string, section: string) => {
   }
 }
 
-const parseResults = async (driver: WebDriver, section: string) => {
-  const $resultsTable = await driver.findElement(
-    By.css('#filter_frm .filter_second_line_dv + table'),
+const parseResults = async (page: Page, section: string) => {
+  const $resultsTable = await page.$(
+    '#filter_frm .filter_second_line_dv + table',
   )
 
-  let rows = await $resultsTable.findElements(By.css('tr'))
+  let rows = await $resultsTable!.$$('tr')
 
   return _.reject(
     await Promise.all(
       _.map(
         rows,
-        async ($row): Promise<Result | undefined> => {
-          let $anchor: WebElement
-          try {
-            $anchor = await $row.findElement(By.className('am'))
-          } catch (e) {
+        async ($row: ElementHandle): Promise<Result | undefined> => {
+          const $anchor = await $row.$('.am')
+
+          if (!$anchor) {
             // If .am doesn't exist, we assume it's irrelevant for results.
             return undefined
           }
 
-          const url = await $anchor.getAttribute('href')
+          const href = await $anchor.evaluate($ =>
+            ($ as HTMLAnchorElement).getAttribute('href'),
+          )
+          const url = `${HOST}${href}`
 
           const [, id] = url.match(/([^\/]+)\.html$/)!
 
           const name = getName(url, section)
 
-          const description = await $anchor.getText()
+          const description = await $anchor.evaluate(
+            $ => ($ as HTMLAnchorElement).textContent!,
+          )
 
-          const thumbnailUrl = await (
-            await $row.findElement(By.css('.msga2:nth-child(2) .isfoto'))
-          ).getAttribute('src')
-          const imageUrl = thumbnailUrl.replace('th2', '800')
+          const $thumbnail = await $row.$('.msga2:nth-child(2) .isfoto')
+          const thumbnailUrl = await $thumbnail!.evaluate($ =>
+            ($ as HTMLImageElement).getAttribute('src'),
+          )
+          const imageUrl = thumbnailUrl!.replace('th2', '800')
 
-          const cells = await $row.findElements(By.tagName('td'))
+          const cells = await $row.$$('td')
 
-          const $priceCell = _.last(cells) as WebElement
-          const price = await (
-            await $priceCell.findElement(By.tagName('a'))
-          ).getText()
+          const $priceCell = _.last(cells)
+          const $priceAnchor = await $priceCell!.$('a')
+          const price = await $priceAnchor!.evaluate($ => $.textContent!)
 
           return {
             id,
@@ -151,12 +148,12 @@ const parseResults = async (driver: WebDriver, section: string) => {
 const input: Input<Options> = (options: Options) => async () => {
   let results: Result[] = []
 
-  await withSelenium(async driver => {
-    await driver.get(`${HOST}${options.section}/filter/`)
+  await withBrowser(async ({ page }) => {
+    await page.goto(`${HOST}/${options.section}/filter/`)
 
-    await applyFilters(driver, options.filters)
+    await applyFilters(page, options.filters)
 
-    results = await parseResults(driver, options.section)
+    results = await parseResults(page, options.section)
   })
 
   return results

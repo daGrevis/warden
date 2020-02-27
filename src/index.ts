@@ -24,7 +24,11 @@ const runOutputs = async (job: Job, results: Results) => {
     filteredResults = await filter(filteredResults)
   }
 
-  return Promise.all(_.map(job.outputs, output => output(job, filteredResults)))
+  if (filteredResults.length === 0) {
+    return
+  }
+
+  await Promise.all(_.map(job.outputs, output => output(job, filteredResults)))
 }
 
 const checkConfig = (config: Config) => {
