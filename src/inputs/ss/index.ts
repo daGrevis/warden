@@ -12,8 +12,8 @@ type Options = {
 
 type Result = {
   id: string
-  url: string
   name: string
+  url: string
   description: string
   imageUrl: string
   extra: {
@@ -130,8 +130,8 @@ const parseResults = async (page: Page, section: string) => {
 
           return {
             id,
-            url,
             name,
+            url,
             description,
             imageUrl,
             extra: {

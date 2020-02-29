@@ -8,11 +8,12 @@ type JobState = {
 
 type Result = {
   id: string
-  url: string
   name: string
+  url?: string
   description?: string
   imageUrl?: string
   extra?: { [key: string]: any }
+  meta?: { [key: string]: any }
 }
 
 type Results = Result[]
@@ -20,7 +21,10 @@ type Results = Result[]
 type OptionalArgs<T> = T extends undefined ? [] : [T]
 
 interface Input<Options = undefined> {
-  (...args: OptionalArgs<Options>): (job: Job) => Promise<Results>
+  (...args: OptionalArgs<Options>): (
+    job: Job,
+    jobState?: JobState,
+  ) => Promise<Results>
 }
 
 interface Filter {

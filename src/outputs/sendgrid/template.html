@@ -36,14 +36,22 @@
         <mj-column>
           <mj-text>
             <h2>
-              <a href="{{this.url}}" target="_blank">
+              {{#if this.url}}
+                <a href="{{this.url}}" target="_blank">
+                  {{this.name}}
+                </a>
+              {{else}}
                 {{this.name}}
-              </a>
+              {{/if}}
             </h2>
           </mj-text>
 
           {{#if this.imageUrl}}
-            <mj-image src="{{this.imageUrl}}" href="{{this.url}}" />
+            {{#if this.url}}
+              <mj-image src="{{this.imageUrl}}" href="{{this.url}}" />
+            {{else}}
+              <mj-image src="{{this.imageUrl}}" />
+            {{/if}}
           {{/if}}
 
           {{#if this.description}}

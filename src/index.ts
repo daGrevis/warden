@@ -1,12 +1,12 @@
 import _ from 'lodash'
 import * as schedule from 'node-schedule'
 
-import { Config, State, Job, Results } from './types'
+import { Config, State, JobState, Job, Results } from './types'
 import config from './config'
 
-const runInputs = async (job: Job) => {
+const runInputs = async (job: Job, jobState?: JobState) => {
   const allResults = await Promise.all(
-    _.map(job.inputs, (input): Promise<Results> => input(job)),
+    _.map(job.inputs, (input): Promise<Results> => input(job, jobState)),
   )
 
   return _.flatMap(allResults, (results, index) => {
@@ -49,7 +49,7 @@ const main = async () => {
   for (const job of config.jobs) {
     console.log(`Starting ${job.id}`)
 
-    const startResults = await runInputs(job)
+    const startResults = await runInputs(job, state[job.id])
 
     state[job.id] = {
       results: _.keyBy(startResults, 'id'),
@@ -65,7 +65,7 @@ const main = async () => {
       schedule.scheduleJob(job.scheduleAt, async () => {
         console.log(`Running ${job.id} as scheduled`)
 
-        const results = await runInputs(job)
+        const results = await runInputs(job, state[job.id])
 
         const resultsById = _.keyBy(results, 'id')
 

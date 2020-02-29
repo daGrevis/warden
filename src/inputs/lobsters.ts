@@ -9,8 +9,8 @@ type Options = {
 
 type Story = {
   id: string
-  url: string
   name: string
+  url: string
   extra: {
     score: number
   }
@@ -32,10 +32,10 @@ const input: Input<Options | undefined> = (options?: Options) => async () => {
 
         return {
           id: await $story!.evaluate($ => $.getAttribute('data-shortid')!),
+          name: await $url!.evaluate($ => $.textContent!),
           url: await $url!.evaluate(
             $ => ($ as HTMLAnchorElement).getAttribute('href')!,
           ),
-          name: await $url!.evaluate($ => $.textContent!),
           extra: {
             score: _.parseInt(await $score!.evaluate($ => $.textContent!)),
             commentsUrl: await $commentsUrl!.evaluate($ =>
