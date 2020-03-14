@@ -4,6 +4,8 @@ import { ElementHandle } from 'playwright'
 import { Input, JobState } from '../types'
 import withBrowser from '../withBrowser'
 
+const URL = 'https://www.worldometers.info/coronavirus/'
+
 type Options = {
   country?: string
 }
@@ -17,6 +19,7 @@ enum CounterType {
 type Result = {
   id: string
   name: string
+  url: string
   meta?: {
     type: CounterType
     value: number
@@ -65,6 +68,7 @@ const createResult = (
   return {
     id: `${counterType}-${value}`,
     name: `${value} ${counterType}` + (diff ? ` (+${diff})` : ''),
+    url: URL,
     meta: {
       type: counterType,
       value,
@@ -79,7 +83,7 @@ const input: Input<Options | undefined> = (options?: Options) => async (
   let results: Result[] = []
 
   await withBrowser(async ({ page }) => {
-    await page.goto('https://www.worldometers.info/coronavirus/')
+    await page.goto(URL)
 
     let $totalCounter
     let $deathsCounter
