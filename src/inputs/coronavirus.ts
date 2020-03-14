@@ -4,8 +4,12 @@ import { ElementHandle } from 'playwright'
 import { Input, JobState } from '../types'
 import withBrowser from '../withBrowser'
 
+type Options = {
+  country?: string
+}
+
 enum CounterType {
-  Cases = 'cases',
+  Total = 'total',
   Deaths = 'deaths',
   Recovered = 'recovered',
 }
@@ -21,6 +25,10 @@ type Result = {
 
 const getNumberFrom$Counter = async ($counter: ElementHandle) => {
   let text = await $counter.evaluate($ => ($ as HTMLSpanElement).innerText!)
+
+  if (!text) {
+    return 0
+  }
 
   text = text.replace(',', '')
 
@@ -64,21 +72,44 @@ const createResult = (
   }
 }
 
-const input: Input = () => async (job, jobState) => {
+const input: Input<Options | undefined> = (options?: Options) => async (
+  job,
+  jobState,
+) => {
   let results: Result[] = []
 
   await withBrowser(async ({ page }) => {
     await page.goto('https://www.worldometers.info/coronavirus/')
 
-    const [$casesCounter, $deathsCounter, $recoveredCounter] = await page.$$(
-      '.maincounter-number span',
-    )
+    let $totalCounter
+    let $deathsCounter
+    let $recoveredCounter
+
+    if (options?.country) {
+      await page.type('#main_table_countries_filter input', options.country)
+
+      const $row = await page.$(
+        '#main_table_countries tr.even, #main_table_countries tr.odd',
+      )
+
+      const columns = await $row!.$$('td')
+
+      $totalCounter = columns[1]
+      $deathsCounter = columns[3]
+      $recoveredCounter = columns[5]
+    } else {
+      const counters = await page.$$('.maincounter-number span')
+
+      $totalCounter = counters[0]
+      $deathsCounter = counters[1]
+      $recoveredCounter = counters[2]
+    }
 
     results = [
       createResult(
-        CounterType.Cases,
-        await getNumberFrom$Counter($casesCounter),
-        await getPreviousNumber(CounterType.Cases, jobState),
+        CounterType.Total,
+        await getNumberFrom$Counter($totalCounter),
+        await getPreviousNumber(CounterType.Total, jobState),
       ),
       createResult(
         CounterType.Deaths,
