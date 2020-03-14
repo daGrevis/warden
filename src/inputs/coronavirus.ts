@@ -67,7 +67,9 @@ const createResult = (
 
   return {
     id: `${counterType}-${value}`,
-    name: `${value} ${counterType}` + (diff ? ` (+${diff})` : ''),
+    name:
+      `${value} ${counterType}` +
+      (diff ? ` (${diff > 0 ? '+' + diff : diff})` : ''),
     url: URL,
     meta: {
       type: counterType,
