@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import * as schedule from 'node-schedule'
+import promiseRetry from 'promise-retry'
 
 import { Config, State, JobState, Job, Results } from './types'
 import config from './config'
@@ -46,10 +47,23 @@ const main = async () => {
 
   checkConfig(config)
 
+  const retryConfig = {
+    ...config?.retry,
+  }
+
   for (const job of config.jobs) {
     console.log(`Starting ${job.id}`)
 
-    const startResults = await runInputs(job, state[job.id])
+    const startResults = await promiseRetry(
+      retry =>
+        runInputs(job, state[job.id]).catch(e => {
+          console.log(e)
+          console.log(`Retrying runInputs for ${job.id}`)
+
+          return retry(e)
+        }),
+      retryConfig,
+    )
 
     state[job.id] = {
       results: _.keyBy(startResults, 'id'),
@@ -58,14 +72,32 @@ const main = async () => {
     if (!job.scheduleAt) {
       console.log(`Running ${job.id} at start once`)
 
-      await runOutputs(job, startResults)
+      await promiseRetry(
+        retry =>
+          runOutputs(job, startResults).catch(e => {
+            console.log(e)
+            console.log(`Retrying runOutputs for ${job.id}`)
+
+            return retry(e)
+          }),
+        retryConfig,
+      )
     } else {
       console.log(`Scheduling ${job.id} at ${job.scheduleAt}`)
 
       schedule.scheduleJob(job.scheduleAt, async () => {
         console.log(`Running ${job.id} as scheduled`)
 
-        const results = await runInputs(job, state[job.id])
+        const results = await promiseRetry(
+          retry =>
+            runInputs(job, state[job.id]).catch(e => {
+              console.log(e)
+              console.log(`Retrying runInputs for ${job.id}`)
+
+              return retry(e)
+            }),
+          retryConfig,
+        )
 
         const resultsById = _.keyBy(results, 'id')
 
@@ -87,7 +119,16 @@ const main = async () => {
           },
         }
 
-        await runOutputs(job, newResults)
+        await promiseRetry(
+          retry =>
+            runOutputs(job, newResults).catch(e => {
+              console.log(e)
+              console.log(`Retrying runOutputs for ${job.id}`)
+
+              return retry(e)
+            }),
+          retryConfig,
+        )
       })
     }
   }

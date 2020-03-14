@@ -54,6 +54,13 @@ type Config = {
     slowMo?: number
     debug?: boolean
   }
+  retry?: {
+    retries?: number
+    factor?: number
+    minTimeout?: number
+    maxTimeout?: number
+    randomize?: boolean
+  }
   jobs: Job[]
 }
 
