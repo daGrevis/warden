@@ -54,16 +54,25 @@ const main = async () => {
   for (const job of config.jobs) {
     console.log(`Starting ${job.id}`)
 
-    const startResults = await promiseRetry(
-      retry =>
-        runInputs(job, state[job.id]).catch(e => {
-          console.log(e)
-          console.log(`Retrying runInputs for ${job.id}`)
+    let startResults: Results = []
 
-          return retry(e)
-        }),
-      retryConfig,
-    )
+    try {
+      startResults = await promiseRetry(
+        retry =>
+          runInputs(job, state[job.id]).catch(e => {
+            console.log(e)
+            console.log(`Retrying runInputs for ${job.id}`)
+
+            return retry(e)
+          }),
+        retryConfig,
+      )
+    } catch (e) {
+      console.log(e)
+      console.log(`Could not start ${job.id}`)
+
+      continue
+    }
 
     state[job.id] = {
       results: _.keyBy(startResults, 'id'),
@@ -133,9 +142,5 @@ const main = async () => {
     }
   }
 }
-
-process.on('SIGINT', () => {
-  process.exit()
-})
 
 main()
