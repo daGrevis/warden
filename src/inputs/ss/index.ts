@@ -25,6 +25,17 @@ type Filter = FilterDefinition & { value: any }
 
 const HOST = 'https://www.ss.com'
 
+const ROUTE_BLACKLIST = [
+  /hits/,
+  /count/,
+  /ads/,
+  /reklama/,
+  /google-analytics/,
+  /set\.cookie\.php/,
+  /get_remote_id\.php/,
+  /chk\.php/,
+]
+
 const applyFilters = async (page: Page, filterOptions?: FilterOptions) => {
   // Always submit just to be sure because sections like transport/cars don't show the results until form has been submitted.
   let needsSubmitting = true
@@ -149,6 +160,13 @@ const input: Input<Options> = (options: Options) => async () => {
   let results: Result[] = []
 
   await withBrowser(async ({ page }) => {
+    // Abort requests to ad pages and other junk.
+    await Promise.all(
+      _.map(ROUTE_BLACKLIST, regex =>
+        page.route(regex, route => route.abort()),
+      ),
+    )
+
     await page.goto(`${HOST}/${options.section}/filter/`)
 
     await applyFilters(page, options.filters)
