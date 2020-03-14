@@ -11,12 +11,17 @@ export default async (
 ) => {
   const driver = playwright.webkit
   const browser = await driver.launch({
+    timeout: config.browser?.timeout ?? 30 * 1000,
     headless: config.browser?.headless ?? true,
     slowMo: config.browser?.slowMo ?? 0,
     dumpio: config.browser?.debug ?? false,
   })
   const context = await browser.newContext()
   const page = await context.newPage()
+
+  if (config.browser?.timeout) {
+    page.setDefaultTimeout(config.browser.timeout)
+  }
 
   try {
     await fn({

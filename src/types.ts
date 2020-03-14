@@ -49,6 +49,7 @@ type Job = {
 
 type Config = {
   browser?: {
+    timeout?: number
     headless?: boolean
     slowMo?: number
     debug?: boolean
