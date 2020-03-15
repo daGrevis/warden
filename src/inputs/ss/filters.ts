@@ -125,4 +125,6 @@ export {
   FilterDefinitions,
   FilterOptions,
   FuelType,
+  Transmission,
+  BodyType,
 }
