@@ -11,11 +11,15 @@ const runInputs = async (job: Job, jobState?: JobState) => {
   )
 
   return _.flatMap(allResults, (results, index) => {
-    return _.map(results, result => ({
-      ...result,
-      // Prefix ID to avoid duplicates between inputs.
-      id: `${index}-${result.id}`,
-    }))
+    if (allResults.length > 1) {
+      // Prefix ID with index to avoid duplicates between inputs.
+      return _.map(results, result => ({
+        ...result,
+        id: `${index}-${result.id}`,
+      }))
+    }
+
+    return results
   })
 }
 
