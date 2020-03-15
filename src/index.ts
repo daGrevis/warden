@@ -5,13 +5,13 @@ import promiseRetry from 'promise-retry'
 import { Config, State, JobState, Job, Results } from './types'
 import config from './config'
 
-const runInputs = async (job: Job, jobState?: JobState) => {
-  const allResults = await Promise.all(
+const runInputs = async (job: Job, jobState?: JobState): Promise<Results> => {
+  const resultGroups = await Promise.all(
     _.map(job.inputs, (input): Promise<Results> => input(job, jobState)),
   )
 
-  return _.flatMap(allResults, (results, index) => {
-    if (allResults.length > 1) {
+  let results =  _.flatMap(resultGroups, (results, index) => {
+    if (resultGroups.length > 1) {
       // Prefix ID with index to avoid duplicates between inputs.
       return _.map(results, result => ({
         ...result,
@@ -21,19 +21,20 @@ const runInputs = async (job: Job, jobState?: JobState) => {
 
     return results
   })
+
+  for (const filter of job.filters ?? []) {
+    results = await filter(results)
+  }
+
+  return results
 }
 
 const runOutputs = async (job: Job, results: Results) => {
-  let filteredResults = results
-  for (const filter of job.filters ?? []) {
-    filteredResults = await filter(filteredResults)
-  }
-
-  if (filteredResults.length === 0) {
+  if (results.length === 0) {
     return
   }
 
-  await Promise.all(_.map(job.outputs, output => output(job, filteredResults)))
+  await Promise.all(_.map(job.outputs, output => output(job, results)))
 }
 
 const checkConfig = (config: Config) => {
