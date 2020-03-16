@@ -7,7 +7,7 @@ type Options = {
   section?: 'hottest' | 'recent' | 'newest'
 }
 
-type Story = {
+type Result = {
   id: string
   name: string
   url: string
@@ -19,12 +19,12 @@ type Story = {
 const input: Input<Options | undefined> = (options?: Options) => async () => {
   const section = options?.section ?? 'hottest'
 
-  let stories: Story[] = []
+  let results: Result[] = []
 
   await withBrowser(async ({ page }) => {
     await page.goto(`http://lobste.rs/${section === 'hottest' ? '' : section}`)
 
-    stories = await Promise.all(
+    results = await Promise.all(
       _.map(await page.$$('.story'), async $story => {
         const $url = await $story.$('.u-url')
         const $commentsUrl = await $story.$('.comments_label a')
@@ -47,7 +47,7 @@ const input: Input<Options | undefined> = (options?: Options) => async () => {
     )
   })
 
-  return stories
+  return results
 }
 
 export default input
