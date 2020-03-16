@@ -7,7 +7,7 @@ Send messages to IRC server via [msks API](https://github.com/daGrevis/msks).
 #### apiRoot
 - _string_
 
-API root like `https://dagrev.is/msks` without trailing slash.
+API root like `https://dagrev.is/msks/api` without trailing slash.
 
 #### sessionId
 - _string_
