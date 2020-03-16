@@ -116,14 +116,14 @@ const main = async () => {
 
         const newResults = _.map(newIds, id => resultsById[id])
 
+        await runOutputs(job, newResults)
+
         state[job.id] = {
           results: {
             ...resultsById,
             ..._.keyBy(newResults, 'id'),
           },
         }
-
-        await runOutputs(job, newResults)
       })
     }
   }
