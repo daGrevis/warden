@@ -34,7 +34,7 @@ const output: Output<Options> = (options: Options) => async (
 ) => {
   const { apiKey, sender, recipients, debug } = options
   const template = options.template ?? './template.html'
-  const asMjml = options.asMjml ?? true
+  const asMjml = options.asMjml ?? options.template === undefined
 
   sendgridMail.setApiKey(apiKey)
 
