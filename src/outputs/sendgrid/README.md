@@ -67,7 +67,7 @@ const config: Config = {
       id: 'hello-world-to-sendgrid',
       name: 'Hello World to SendGrid',
       inputs: [staticInput({ data: [[{ id: '1', name: 'Hello, world!' }]] })],
-      outputs: [mySendgridOutput()],
+      outputs: [mySendgridOutput({})],
     },
 
     {
