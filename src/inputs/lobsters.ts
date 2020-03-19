@@ -3,9 +3,16 @@ import _ from 'lodash'
 import { Input } from '../types'
 import withBrowser from '../withBrowser'
 
-type Options = {
+type OptionsForSection = {
   section?: 'hottest' | 'recent' | 'newest'
 }
+
+type OptionsForTags = {
+  section: 'tags'
+  tags: [string, ...string[]]
+}
+
+type Options = OptionsForSection | OptionsForTags
 
 type Result = {
   id: string
@@ -16,13 +23,29 @@ type Result = {
   }
 }
 
+const HOST = 'http://lobste.rs'
+
+const isOptionsForTags = (options?: Options): options is OptionsForTags => {
+  return options !== undefined && 'tags' in options
+}
+
 const input: Input<Options | undefined> = (options?: Options) => async () => {
   const section = options?.section ?? 'hottest'
 
   let results: Result[] = []
 
   await withBrowser(async ({ page }) => {
-    await page.goto(`http://lobste.rs/${section === 'hottest' ? '' : section}`)
+    let pageUrl
+
+    if (isOptionsForTags(options)) {
+      const { tags } = options
+
+      pageUrl = `${HOST}/t/${tags.join(',')}`
+    } else {
+      pageUrl = `${HOST}/${section === 'hottest' ? '' : section}`
+    }
+
+    await page.goto(pageUrl)
 
     results = await Promise.all(
       _.map(await page.$$('.story'), async $story => {
