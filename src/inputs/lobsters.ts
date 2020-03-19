@@ -62,12 +62,12 @@ const input: Input<Options | undefined> = (options?: Options) => async () => {
             id: await $story!.evaluate($ => $.getAttribute('data-shortid')!),
             name: await $url!.evaluate($ => $.textContent!),
             url: await $url!.evaluate(
-              $ => ($ as HTMLAnchorElement).getAttribute('href')!,
+              $ => ($ as HTMLAnchorElement).href,
             ),
             extra: {
               score: _.parseInt(await $score!.evaluate($ => $.textContent!)),
               commentsUrl: await $commentsUrl!.evaluate(
-                $ => ($ as HTMLAnchorElement).getAttribute('href')!,
+                $ => ($ as HTMLAnchorElement).href,
               ),
               tags: await Promise.all(
                 _.map(await $tags!.$$('.tag'), $tag =>
