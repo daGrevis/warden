@@ -92,10 +92,13 @@ const input: Input<Options | undefined> = (options?: Options) => async (
     let $recoveredCounter
 
     if (options?.country) {
-      await page.type('#main_table_countries_filter input', options.country)
+      await page.type(
+        '#main_table_countries_today_filter input',
+        options.country,
+      )
 
       const $row = await page.$(
-        '#main_table_countries tr.even, #main_table_countries tr.odd',
+        '#main_table_countries_today tr.even, #main_table_countries_today tr.odd',
       )
 
       const columns = await $row!.$$('td')
