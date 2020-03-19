@@ -20,6 +20,8 @@ type Result = {
   url: string
   extra: {
     score: number
+    commentsUrl: string
+    tags: string[]
   }
 }
 
@@ -48,25 +50,34 @@ const input: Input<Options | undefined> = (options?: Options) => async () => {
     await page.goto(pageUrl)
 
     results = await Promise.all(
-      _.map(await page.$$('.story'), async $story => {
-        const $url = await $story.$('.u-url')
-        const $commentsUrl = await $story.$('.comments_label a')
-        const $score = await $story.$('.score')
+      _.map(
+        await page.$$('.story'),
+        async ($story): Promise<Result> => {
+          const $url = await $story.$('.u-url')
+          const $commentsUrl = await $story.$('.comments_label a')
+          const $score = await $story.$('.score')
+          const $tags = await $story.$('.tags')
 
-        return {
-          id: await $story!.evaluate($ => $.getAttribute('data-shortid')!),
-          name: await $url!.evaluate($ => $.textContent!),
-          url: await $url!.evaluate(
-            $ => ($ as HTMLAnchorElement).getAttribute('href')!,
-          ),
-          extra: {
-            score: _.parseInt(await $score!.evaluate($ => $.textContent!)),
-            commentsUrl: await $commentsUrl!.evaluate($ =>
-              ($ as HTMLAnchorElement).getAttribute('href'),
+          return {
+            id: await $story!.evaluate($ => $.getAttribute('data-shortid')!),
+            name: await $url!.evaluate($ => $.textContent!),
+            url: await $url!.evaluate(
+              $ => ($ as HTMLAnchorElement).getAttribute('href')!,
             ),
-          },
-        }
-      }),
+            extra: {
+              score: _.parseInt(await $score!.evaluate($ => $.textContent!)),
+              commentsUrl: await $commentsUrl!.evaluate(
+                $ => ($ as HTMLAnchorElement).getAttribute('href')!,
+              ),
+              tags: await Promise.all(
+                _.map(await $tags!.$$('.tag'), $tag =>
+                  $tag.evaluate($ => $.textContent!),
+                ),
+              ),
+            },
+          }
+        },
+      ),
     )
   })
 
