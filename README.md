@@ -2,6 +2,8 @@
 
 Continuous Web Scraping Framework
 
+![](https://github.com/daGrevis/warden/workflows/warden/badge.svg)
+
 ---
 
 Framework for easily creating web scrapers that continuously check for new

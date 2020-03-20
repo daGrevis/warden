@@ -26,9 +26,9 @@
   },
   "scripts": {
     "start": "ts-node -r dotenv/config src/index.ts",
+    "formatcheck": "prettier --check 'src/**/*.ts'",
     "typecheck": "tsc --noEmit",
-    "formatcheck": "prettier --check src/**/*.ts",
-    "format": "prettier --write src/**/*.ts",
+    "format": "prettier --write 'src/**/*.ts'",
     "test": "yarn formatcheck && yarn typecheck"
   }
 }
