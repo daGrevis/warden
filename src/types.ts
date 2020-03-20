@@ -48,6 +48,7 @@ type Job = {
 }
 
 type Config = {
+  timezone?: string
   browser?: {
     timeout?: number
     headless?: boolean

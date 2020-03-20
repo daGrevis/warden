@@ -61,9 +61,7 @@ const input: Input<Options | undefined> = (options?: Options) => async () => {
           return {
             id: await $story!.evaluate($ => $.getAttribute('data-shortid')!),
             name: await $url!.evaluate($ => $.textContent!),
-            url: await $url!.evaluate(
-              $ => ($ as HTMLAnchorElement).href,
-            ),
+            url: await $url!.evaluate($ => ($ as HTMLAnchorElement).href),
             extra: {
               score: _.parseInt(await $score!.evaluate($ => $.textContent!)),
               commentsUrl: await $commentsUrl!.evaluate(

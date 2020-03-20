@@ -98,7 +98,7 @@ const main = async () => {
     } else {
       console.log(`Scheduling ${job.id} at ${job.scheduleAt}`)
 
-      schedule.scheduleJob(job.scheduleAt, async () => {
+      const schedulerJob = new schedule.Job(job.id, async () => {
         console.log(`Running ${job.id} as scheduled`)
 
         const results = await runInputs(job, state[job.id])
@@ -124,6 +124,11 @@ const main = async () => {
             ..._.keyBy(newResults, 'id'),
           },
         }
+      })
+
+      schedulerJob.schedule({
+        rule: job.scheduleAt,
+        tz: config.timezone,
       })
     }
   }

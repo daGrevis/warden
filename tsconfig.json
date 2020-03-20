@@ -6,7 +6,8 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "strict": true
+    "strict": true,
+    "typeRoots" : ["./typings"]
   },
   "include": ["./src/**/*"]
 }
