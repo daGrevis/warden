@@ -120,7 +120,7 @@ const main = async () => {
 
         state[job.id] = {
           results: {
-            ...resultsById,
+            ...state[job.id].results,
             ..._.keyBy(newResults, 'id'),
           },
         }
