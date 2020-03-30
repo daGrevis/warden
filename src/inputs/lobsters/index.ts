@@ -1,7 +1,7 @@
 import _ from 'lodash'
 
-import { Input } from '../types'
-import withBrowser from '../withBrowser'
+import { Input } from '../../types'
+import withBrowser from '../../withBrowser'
 
 type OptionsForSection = {
   section?: 'hottest' | 'recent' | 'newest'

@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import { ElementHandle } from 'playwright'
 
-import { Input, JobState } from '../types'
-import withBrowser from '../withBrowser'
+import { Input, JobState } from '../../types'
+import withBrowser from '../../withBrowser'
 
 const URL = 'https://www.worldometers.info/coronavirus/'
 
