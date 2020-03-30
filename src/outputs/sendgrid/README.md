@@ -2,6 +2,62 @@
 
 Send email via [SendGrid API](https://sendgrid.com/) with nice templating.
 
+## Examples
+
+### withOptions Helper
+
+```ts
+import sendgrid from './outputs/sendgrid'
+import withOptions from './withOptions'
+
+const mySendgrid = withOptions(sendgrid, {
+  apiKey: process.env.SENDGRID_API_KEY,
+  sender: 'warden@example.com',
+  recipients: ['me@example.com'],
+})
+```
+
+### Send Email
+
+```ts
+mySendgrid({
+})
+```
+
+### Multiple Recipients
+
+```ts
+mySendgrid({
+  recipients: ['me@example.com', 'friend@example.com'],
+})
+```
+
+### Custom Template
+
+```ts
+mySendgrid({
+  template: './my-template.html',
+})
+```
+
+### MJML Template
+
+```ts
+mySendgrid({
+  template: './my-template.html',
+  asMjml: true,
+})
+```
+
+### Debug Mode
+
+```ts
+mySendgrid({
+  recipients: [],
+  debug: true,
+})
+```
+
 ## Options
 
 #### apiKey
@@ -43,70 +99,3 @@ Optional flag for debug mode.
 Defaults to `false`.
 
 Saves email to `./debug-template.html`.
-
-## Examples
-
-```ts
-import _ from 'lodash'
-
-import { Config } from './types'
-import dumb from './inputs/dumb'
-import ss from './inputs/ss'
-import sendgrid from './outputs/sendgrid'
-import withOptions from './withOptions'
-
-const mySendgrid = withOptions(sendgrid, {
-  apiKey: process.env.SENDGRID_API_KEY,
-  sender: 'warden@example.com',
-  recipients: ['me@example.com'],
-})
-
-const config: Config = {
-  jobs: [
-    {
-      id: 'hello-world-to-sendgrid',
-      name: 'Hello World to SendGrid',
-      inputs: [dumb({ data: [[{ id: '1', name: 'Hello, world!' }]] })],
-      outputs: [mySendgrid({})],
-    },
-
-    {
-      id: 'ss-flats-to-sendgrid',
-      name: 'SS Flats to SendGrid',
-      scheduleAt: '0 * * * *',
-      inputs: [ss({ section: 'real-estate/flats/riga/centre' })],
-      outputs: [
-        mySendgrid({
-          recipients: ['me@example.com', 'friend@example.com'],
-        }),
-      ],
-    },
-
-    {
-      id: 'ss-flats-to-sendgrid-with-template',
-      name: 'SS Flats to SendGrid with Template',
-      scheduleAt: '0 * * * *',
-      inputs: [ss({ section: 'real-estate/flats/riga/centre' })],
-      outputs: [
-        mySendgrid({
-          template: './my-template.html',
-        }),
-      ],
-    },
-
-    {
-      id: 'ss-flats-to-sendgrid-debug',
-      name: 'SS Flats to SendGrid Debug',
-      inputs: [ss({ section: 'real-estate/flats/riga/centre' })],
-      outputs: [
-        mySendgrid({
-          recipients: [],
-          debug: true,
-        }),
-      ],
-    },
-  ],
-}
-
-export default config
-```
