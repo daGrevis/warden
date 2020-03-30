@@ -1,4 +1,4 @@
-import { Input, Results } from '../types'
+import { Input, Results } from '../../types'
 
 type Options = {
   data?: Results[]

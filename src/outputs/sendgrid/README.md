@@ -50,12 +50,12 @@ Saves email to `./debug-template.html`.
 import _ from 'lodash'
 
 import { Config } from './types'
-import staticInput from './inputs/static'
-import ssInput from './inputs/ss'
-import sendgridOutput from './outputs/sendgrid'
+import dumb from './inputs/dumb'
+import ss from './inputs/ss'
+import sendgrid from './outputs/sendgrid'
 import withOptions from './withOptions'
 
-const mySendgridOutput = withOptions(sendgridOutput, {
+const mySendgrid = withOptions(sendgrid, {
   apiKey: process.env.SENDGRID_API_KEY,
   sender: 'warden@example.com',
   recipients: ['me@example.com'],
@@ -66,17 +66,17 @@ const config: Config = {
     {
       id: 'hello-world-to-sendgrid',
       name: 'Hello World to SendGrid',
-      inputs: [staticInput({ data: [[{ id: '1', name: 'Hello, world!' }]] })],
-      outputs: [mySendgridOutput({})],
+      inputs: [dumb({ data: [[{ id: '1', name: 'Hello, world!' }]] })],
+      outputs: [mySendgrid({})],
     },
 
     {
       id: 'ss-flats-to-sendgrid',
       name: 'SS Flats to SendGrid',
       scheduleAt: '0 * * * *',
-      inputs: [ssInput({ section: 'real-estate/flats/riga/centre' })],
+      inputs: [ss({ section: 'real-estate/flats/riga/centre' })],
       outputs: [
-        mySendgridOutput({
+        mySendgrid({
           recipients: ['me@example.com', 'friend@example.com'],
         }),
       ],
@@ -86,9 +86,9 @@ const config: Config = {
       id: 'ss-flats-to-sendgrid-with-template',
       name: 'SS Flats to SendGrid with Template',
       scheduleAt: '0 * * * *',
-      inputs: [ssInput({ section: 'real-estate/flats/riga/centre' })],
+      inputs: [ss({ section: 'real-estate/flats/riga/centre' })],
       outputs: [
-        mySendgridOutput({
+        mySendgrid({
           template: './my-template.html',
         }),
       ],
@@ -97,9 +97,9 @@ const config: Config = {
     {
       id: 'ss-flats-to-sendgrid-debug',
       name: 'SS Flats to SendGrid Debug',
-      inputs: [ssInput({ section: 'real-estate/flats/riga/centre' })],
+      inputs: [ss({ section: 'real-estate/flats/riga/centre' })],
       outputs: [
-        mySendgridOutput({
+        mySendgrid({
           recipients: [],
           debug: true,
         }),

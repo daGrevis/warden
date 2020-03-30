@@ -1,8 +1,8 @@
 import _ from 'lodash'
 
 import { Config } from './types'
-import staticInput from './inputs/static'
-import consoleOutput from './outputs/console'
+import dumb from './inputs/dumb'
+import terminal from './outputs/terminal'
 
 const config: Config = {
   jobs: [
@@ -11,35 +11,19 @@ const config: Config = {
       name: '3 Heartbeats (1 bpm)',
       scheduleAt: '* * * * *',
       inputs: [
-        staticInput({
+        dumb({
           data: [
             [],
-            [
-              {
-                id: '1',
-                url: 'https://example.com/1.html',
-                name: 'First',
-              },
-            ],
-            [
-              {
-                id: '2',
-                url: 'https://example.com/2.html',
-                name: 'Second',
-              },
-            ],
-            [
-              {
-                id: '3',
-                url: 'https://example.com/3.html',
-                name: 'Third',
-              },
-            ],
+            [{ id: '1', name: 'First' }],
+            [{ id: '2', name: 'Second' }],
+            [{ id: '3', name: 'Third' }],
           ],
         }),
       ],
-      outputs: [consoleOutput()],
+      outputs: [terminal()],
     },
+
+    // TODO: Add your jobs here...
   ],
 }
 

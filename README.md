@@ -18,9 +18,9 @@ and `sendgrid` as output to create a job like this:
   id: 'lobsters-daily',
   name: 'Lobste.rs Daily',
   scheduleAt: '0 12 * * *',
-  inputs: [lobstersInput()],
+  inputs: [lobsters()],
   outputs: [
-    sendgridOutput({
+    sendgrid({
       apiKey: 'sekret',
       sender: 'warden@example.com',
       recipients: ['me@example.com'],
@@ -53,26 +53,20 @@ weekday.
   id: 'ss-audi-bmw-mercedes',
   name: 'SS Audi, BMW & Mercedes',
   scheduleAt: '0 9-17 * * 1-5',
-  inputs: _.map(
-    [
-      'transport/cars/audi',
-      'transport/cars/bmw',
-      'transport/cars/mercedes',
-    ],
-    section =>
-      ssInput({
-        section,
-        filters: {
-          engineSizeMin: '3.0',
-          fuelType: FuelType.Gasoline,
-          transmission: Transmission.Manual,
-          priceMin: 10000,
-        },
-      }),
+  inputs: ['audi', 'bmw', 'mercedes'].map(model =>
+    ss({
+      section: `transport/cars/${model}`,
+      filters: {
+        engineSizeMin: '3.0',
+        fuelType: FuelType.Gasoline,
+        transmission: Transmission.Manual,
+        priceMin: 10000,
+      },
+    }),
   ),
   outputs: [
-    consoleOutput(),
-    sendgridOutput({
+    terminal(),
+    sendgrid({
       apiKey: 'sekret',
       sender: 'warden@example.com',
       recipients: ['me@example.com'],

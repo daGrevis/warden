@@ -42,12 +42,12 @@ Defaults to sending `name` of each result as is.
 import _ from 'lodash'
 
 import { Config } from './types'
-import staticInput from './inputs/static'
-import lobstersInput from './inputs/lobsters'
-import msksOutput from './outputs/msks'
+import dumb from './inputs/dumb'
+import lobsters from './inputs/lobsters'
+import msks from './outputs/msks'
 import withOptions from './withOptions'
 
-const myMsksOutput = withOptions(msksOutput, {
+const myMsks = withOptions(msks, {
   apiRoot: 'https://dagrev.is/msks/api',
   sessionId: process.env.MSKS_SESSION_ID,
   token: process.env.MSKS_TOKEN,
@@ -59,9 +59,9 @@ const config: Config = {
     {
       id: 'hello-world-to-msks',
       name: 'Hello World to Msks',
-      inputs: [staticInput({ data: [[{ id: '1', name: 'Hello, world!' }]] })],
+      inputs: [dumb({ data: [[{ id: '1', name: 'Hello, world!' }]] })],
       outputs: [
-        myMsksOutput({
+        myMsks({
           channelName: '#meeseekeria',
         }),
       ],
@@ -71,9 +71,9 @@ const config: Config = {
       id: 'lobsters-newest-to-msks',
       name: 'Lobsters Newest to Msks',
       scheduleAt: '*/5 * * * *',
-      inputs: [lobstersInput({ section: 'newest' })],
+      inputs: [lobsters({ section: 'newest' })],
       outputs: [
-        myMsksOutput({
+        myMsks({
           channelName: '#meeseekeria',
           getTexts: results =>
             _.map(results, result => `${result.name} ${result.url}`),
@@ -85,9 +85,9 @@ const config: Config = {
       id: 'lobsters-top-to-msks',
       name: 'Lobsters Top to Msks',
       scheduleAt: '0 * * *',
-      inputs: [lobstersInput()],
+      inputs: [lobsters()],
       outputs: [
-        myMsksOutput({
+        myMsks({
           channelName: '#meeseekeria',
           getTexts: results => {
             const topResult = _.maxBy(results, result => result.extra?.score)!
