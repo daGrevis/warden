@@ -33,7 +33,7 @@ const getNumberFrom$Counter = async ($counter: ElementHandle) => {
     return 0
   }
 
-  text = text.replace(',', '')
+  text = text.replace(/,/g, '')
 
   return _.parseInt(text)
 }
