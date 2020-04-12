@@ -23,7 +23,14 @@ type Result = {
   meta?: {
     type: CounterType
     value: number
+    valueText: string
+    diffText: string
   }
+}
+
+const formatNumber = (number: number) => {
+  // https://stackoverflow.com/a/2901298/458610
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
 const getNumberFrom$Counter = async ($counter: ElementHandle) => {
@@ -65,15 +72,20 @@ const createResult = (
 ): Result => {
   const diff = prevValue ? value - prevValue : 0
 
+  const valueText = formatNumber(value)
+  const diffText = formatNumber(diff)
+
   return {
     id: `${counterType}-${value}`,
     name:
-      `${value} ${counterType}` +
-      (diff ? ` (${diff > 0 ? '+' + diff : diff})` : ''),
+      `${valueText} ${counterType}` +
+      (diff ? ` (${diff > 0 ? '+' + diffText : diffText})` : ''),
     url: URL,
     meta: {
       type: counterType,
       value,
+      valueText,
+      diffText,
     },
   }
 }
