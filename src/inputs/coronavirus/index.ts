@@ -11,7 +11,7 @@ type Options = {
 }
 
 enum CounterType {
-  Total = 'total',
+  Infected = 'infected',
   Deaths = 'deaths',
   Recovered = 'recovered',
 }
@@ -23,6 +23,7 @@ type Result = {
   meta?: {
     type: CounterType
     value: number
+    diff: number
     valueText: string
     diffText: string
   }
@@ -84,6 +85,7 @@ const createResult = (
     meta: {
       type: counterType,
       value,
+      diff,
       valueText,
       diffText,
     },
@@ -99,7 +101,7 @@ const input: Input<Options | undefined> = (options?: Options) => async (
   await withBrowser(async ({ page }) => {
     await page.goto(URL)
 
-    let $totalCounter
+    let $infectedCounter
     let $deathsCounter
     let $recoveredCounter
 
@@ -115,22 +117,22 @@ const input: Input<Options | undefined> = (options?: Options) => async (
 
       const columns = await $row!.$$('td')
 
-      $totalCounter = columns[1]
+      $infectedCounter = columns[1]
       $deathsCounter = columns[3]
       $recoveredCounter = columns[5]
     } else {
       const counters = await page.$$('.maincounter-number span')
 
-      $totalCounter = counters[0]
+      $infectedCounter = counters[0]
       $deathsCounter = counters[1]
       $recoveredCounter = counters[2]
     }
 
     results = [
       createResult(
-        CounterType.Total,
-        await getNumberFrom$Counter($totalCounter),
-        await getPreviousNumber(CounterType.Total, jobState),
+        CounterType.Infected,
+        await getNumberFrom$Counter($infectedCounter),
+        await getPreviousNumber(CounterType.Infected, jobState),
       ),
       createResult(
         CounterType.Deaths,
