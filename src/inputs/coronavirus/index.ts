@@ -14,6 +14,7 @@ enum CounterType {
   Infected = 'infected',
   Deaths = 'deaths',
   Recovered = 'recovered',
+  Tested = 'tested',
 }
 
 type Result = {
@@ -101,9 +102,10 @@ const input: Input<Options | undefined> = (options?: Options) => async (
   await withBrowser(async ({ page }) => {
     await page.goto(URL)
 
-    let $infectedCounter
-    let $deathsCounter
-    let $recoveredCounter
+    let infected
+    let deaths
+    let recovered
+    let tested
 
     if (options?.country) {
       await page.type(
@@ -117,33 +119,43 @@ const input: Input<Options | undefined> = (options?: Options) => async (
 
       const columns = await $row!.$$('td')
 
-      $infectedCounter = columns[1]
-      $deathsCounter = columns[3]
-      $recoveredCounter = columns[5]
+      infected = await getNumberFrom$Counter(columns[1])
+      deaths = await getNumberFrom$Counter(columns[3])
+      recovered = await getNumberFrom$Counter(columns[5])
+      tested = await getNumberFrom$Counter(columns[10])
     } else {
       const counters = await page.$$('.maincounter-number span')
 
-      $infectedCounter = counters[0]
-      $deathsCounter = counters[1]
-      $recoveredCounter = counters[2]
+      const rows = await page.$$(
+        '#main_table_countries_today tr.even, #main_table_countries_today tr.odd',
+      )
+      const testNumbers = await Promise.all(
+        _.map(rows, async $row => {
+          const columns = await $row.$$('td')
+
+          return getNumberFrom$Counter(columns[10])
+        }),
+      )
+
+      infected = await getNumberFrom$Counter(counters[0])
+      deaths = await getNumberFrom$Counter(counters[1])
+      recovered = await getNumberFrom$Counter(counters[2])
+      tested = _.sum(testNumbers)
     }
 
+    const prevInfected = await getPreviousNumber(CounterType.Infected, jobState)
+    const prevDeaths = await getPreviousNumber(CounterType.Deaths, jobState)
+    const prevRecovered = await getPreviousNumber(
+      CounterType.Recovered,
+      jobState,
+    )
+    const prevTested = await getPreviousNumber(CounterType.Tested, jobState)
+
     results = [
-      createResult(
-        CounterType.Infected,
-        await getNumberFrom$Counter($infectedCounter),
-        await getPreviousNumber(CounterType.Infected, jobState),
-      ),
-      createResult(
-        CounterType.Deaths,
-        await getNumberFrom$Counter($deathsCounter),
-        await getPreviousNumber(CounterType.Deaths, jobState),
-      ),
-      createResult(
-        CounterType.Recovered,
-        await getNumberFrom$Counter($recoveredCounter),
-        await getPreviousNumber(CounterType.Recovered, jobState),
-      ),
+      createResult(CounterType.Infected, infected, prevInfected),
+      createResult(CounterType.Deaths, deaths, prevDeaths),
+      createResult(CounterType.Recovered, recovered, prevRecovered),
+      createResult(CounterType.Tested, tested, prevTested),
     ]
   })
 
