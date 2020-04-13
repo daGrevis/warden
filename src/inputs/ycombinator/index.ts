@@ -35,7 +35,7 @@ const input: Input<Options | undefined> = (options?: Options) => async () => {
       _.map(
         _.chunk(rows, 2),
         async ([$story, $meta]): Promise<Result> => {
-          const id = await $story.evaluate($ => $.id)
+          const id = await $story.evaluate(($) => $.id)
 
           const $link = await $story.$('.storylink')
 
@@ -43,15 +43,15 @@ const input: Input<Options | undefined> = (options?: Options) => async () => {
 
           let score = 0
           if ($score) {
-            let scoreText = await $score!.evaluate($ => $.textContent!)
+            let scoreText = await $score!.evaluate(($) => $.textContent!)
             scoreText = scoreText.replace(/ points?$/, '')
             score = _.parseInt(scoreText)
           }
 
           return {
             id,
-            name: await $link!.evaluate($ => $.textContent!),
-            url: await $link!.evaluate($ => ($ as HTMLAnchorElement).href),
+            name: await $link!.evaluate(($) => $.textContent!),
+            url: await $link!.evaluate(($) => ($ as HTMLAnchorElement).href),
             extra: {
               score,
               commentsUrl: `${HOST}/item?id=${id}`,

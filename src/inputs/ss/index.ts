@@ -53,17 +53,14 @@ const applyFilters = async (page: Page, filterOptions?: FilterOptions) => {
 
   for (const filter of filters) {
     const $filter = await page.$(filter.selector)
-    const tagName = await $filter!.evaluate($ => $.tagName)
+    const tagName = await $filter!.evaluate(($) => $.tagName)
 
     if (tagName === 'INPUT') {
       await $filter!.type(`${filter.value}`)
 
       needsSubmitting = true
     } else if (tagName === 'SELECT') {
-      await Promise.all([
-        page.waitForNavigation(),
-        $filter!.select(`${filter.value}`),
-      ])
+      await $filter!.selectOption(`${filter.value}`)
 
       needsSubmitting = false
     }
@@ -72,7 +69,7 @@ const applyFilters = async (page: Page, filterOptions?: FilterOptions) => {
   if (needsSubmitting) {
     const $submitButton = await page.$('.s12')
 
-    await Promise.all([page.waitForNavigation(), $submitButton!.click()])
+    await $submitButton!.click()
   }
 }
 
@@ -114,7 +111,7 @@ const parseResults = async (page: Page, section: string) => {
             return undefined
           }
 
-          const href = await $anchor.evaluate($ =>
+          const href = await $anchor.evaluate(($) =>
             ($ as HTMLAnchorElement).getAttribute('href'),
           )
           const url = `${HOST}${href}`
@@ -124,11 +121,11 @@ const parseResults = async (page: Page, section: string) => {
           const name = getName(url, section)
 
           const description = await $anchor.evaluate(
-            $ => ($ as HTMLAnchorElement).textContent!,
+            ($) => ($ as HTMLAnchorElement).textContent!,
           )
 
           const $thumbnail = await $row.$('.msga2:nth-child(2) .isfoto')
-          const thumbnailUrl = await $thumbnail!.evaluate($ =>
+          const thumbnailUrl = await $thumbnail!.evaluate(($) =>
             ($ as HTMLImageElement).getAttribute('src'),
           )
           const imageUrl = thumbnailUrl!.replace('th2', '800')
@@ -137,7 +134,7 @@ const parseResults = async (page: Page, section: string) => {
 
           const $priceCell = _.last(cells)
           const $priceAnchor = await $priceCell!.$('a')
-          const price = await $priceAnchor!.evaluate($ => $.textContent!)
+          const price = await $priceAnchor!.evaluate(($) => $.textContent!)
 
           return {
             id,
@@ -162,8 +159,8 @@ const input: Input<Options> = (options: Options) => async () => {
   await withBrowser(async ({ page }) => {
     // Abort requests to ad pages and other junk.
     await Promise.all(
-      _.map(ROUTE_BLACKLIST, regex =>
-        page.route(regex, route => route.abort()),
+      _.map(ROUTE_BLACKLIST, (regex) =>
+        page.route(regex, (route) => route.abort()),
       ),
     )
 

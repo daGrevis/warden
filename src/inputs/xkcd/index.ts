@@ -23,17 +23,17 @@ const input: Input = () => async () => {
     const $metaUrl = await page.$('meta[property="og:url"]')
     const $comic = await page.$('#comic img')
 
-    const url = await $metaUrl!.evaluate($ => ($ as HTMLMetaElement).content!)
+    const url = await $metaUrl!.evaluate(($) => ($ as HTMLMetaElement).content!)
 
     const [, id] = url.match(/(\d+)\/$/)!
 
-    const name = await $title!.evaluate($ => $.textContent!)
+    const name = await $title!.evaluate(($) => $.textContent!)
 
     const description = await $comic!.evaluate(
-      $ => ($ as HTMLImageElement).title!,
+      ($) => ($ as HTMLImageElement).title!,
     )
 
-    const imageUrl = await $comic!.evaluate($ => ($ as HTMLImageElement).src!)
+    const imageUrl = await $comic!.evaluate(($) => ($ as HTMLImageElement).src!)
 
     results = [
       {

@@ -31,7 +31,7 @@ const output: Output<Options> = (options: Options) => async (job, results) => {
 
   const texts = options.getTexts
     ? options.getTexts(results)
-    : _.map(results, result => result.name)
+    : _.map(results, (result) => result.name)
 
   for (const text of texts) {
     await sendMessage(text)

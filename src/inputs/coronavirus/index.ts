@@ -36,7 +36,7 @@ const formatNumber = (number: number) => {
 }
 
 const getNumberFrom$Counter = async ($counter: ElementHandle) => {
-  let text = await $counter.evaluate($ => ($ as HTMLSpanElement).innerText!)
+  let text = await $counter.evaluate(($) => ($ as HTMLSpanElement).innerText!)
 
   if (!text) {
     return 0
@@ -56,8 +56,8 @@ const getPreviousNumber = async (
   }
 
   const maxResult = _.maxBy(
-    _.filter(jobState.results, result => result.meta!.type === counterType),
-    result => result.meta!.value,
+    _.filter(jobState.results, (result) => result.meta!.type === counterType),
+    (result) => result.meta!.value,
   )
 
   if (!maxResult) {
@@ -130,7 +130,7 @@ const input: Input<Options | undefined> = (options?: Options) => async (
         '#main_table_countries_today tr.even, #main_table_countries_today tr.odd',
       )
       const testNumbers = await Promise.all(
-        _.map(rows, async $row => {
+        _.map(rows, async ($row) => {
           const columns = await $row.$$('td')
 
           return getNumberFrom$Counter(columns[10])

@@ -7,7 +7,7 @@ import config from './config'
 
 const runInputs = async (job: Job, jobState?: JobState): Promise<Results> =>
   promiseRetry(
-    retry =>
+    (retry) =>
       (async () => {
         const resultGroups = await Promise.all(
           _.map(job.inputs, (input): Promise<Results> => input(job, jobState)),
@@ -16,7 +16,7 @@ const runInputs = async (job: Job, jobState?: JobState): Promise<Results> =>
         let results = _.flatMap(resultGroups, (results, index) => {
           if (resultGroups.length > 1) {
             // Prefix ID with index to avoid duplicates between inputs.
-            return _.map(results, result => ({
+            return _.map(results, (result) => ({
               ...result,
               id: `${index}-${result.id}`,
             }))
@@ -30,7 +30,7 @@ const runInputs = async (job: Job, jobState?: JobState): Promise<Results> =>
         }
 
         return results
-      })().catch(e => {
+      })().catch((e) => {
         console.log(e)
         console.log(`Retrying runInputs for ${job.id}`)
 
@@ -41,14 +41,14 @@ const runInputs = async (job: Job, jobState?: JobState): Promise<Results> =>
 
 const runOutputs = async (job: Job, results: Results): Promise<void> => {
   return promiseRetry(
-    retry =>
+    (retry) =>
       (async () => {
         if (results.length === 0) {
           return
         }
 
-        await Promise.all(_.map(job.outputs, output => output(job, results)))
-      })().catch(e => {
+        await Promise.all(_.map(job.outputs, (output) => output(job, results)))
+      })().catch((e) => {
         console.log(e)
         console.log(`Retrying runOutputs for ${job.id}`)
 
@@ -114,7 +114,7 @@ const main = async () => {
           return
         }
 
-        const newResults = _.map(newIds, id => resultsById[id])
+        const newResults = _.map(newIds, (id) => resultsById[id])
 
         await runOutputs(job, newResults)
 
