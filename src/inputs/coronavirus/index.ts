@@ -154,7 +154,7 @@ const input: Input<Options | undefined> = (options?: Options) => async (
       ),
     )
 
-    if (countries && countries.length > 1) {
+    if (countries && countries.length > 0) {
       const countryRows = _.filter(rows, (columns) =>
         _.includes(countries, columns[0]),
       )
