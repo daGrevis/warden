@@ -57,7 +57,7 @@ weekday.
     ss({
       section: `transport/cars/${model}`,
       filters: {
-        engineSizeMin: '3.0',
+        engineSizeLitersMin: '3.0',
         fuelType: FuelType.Gasoline,
         transmission: Transmission.Manual,
         priceMin: 10000,

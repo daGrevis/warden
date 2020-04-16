@@ -39,8 +39,10 @@ type AllRequiredFilterOptions = {
   floorMax: number
 
   // Transport
-  engineSizeMin: number | string
-  engineSizeMax: number | string
+  engineSizeLitersMin: number | string
+  engineSizeLitersMax: number | string
+  engineSizeCcMin: number
+  engineSizeCcMax: number
   fuelType: FuelType
   transmission: Transmission
   bodyType: BodyType
@@ -97,13 +99,21 @@ const filterDefinitions: FilterDefinitions = {
     name: 'Floor max',
   },
 
-  engineSizeMin: {
+  engineSizeLitersMin: {
     selector: '#f_o_15_min',
-    name: 'Engine size min',
+    name: 'Engine size liters min',
   },
-  engineSizeMax: {
+  engineSizeLitersMax: {
     selector: '#f_o_15_max',
-    name: 'Engine size max',
+    name: 'Engine size liters max',
+  },
+  engineSizeCcMin: {
+    selector: '#f_o_989_min',
+    name: 'Engine size cc min',
+  },
+  engineSizeCcMax: {
+    selector: '#f_o_989_max',
+    name: 'Engine size cc max',
   },
   fuelType: {
     selector: '#f_o_34',
