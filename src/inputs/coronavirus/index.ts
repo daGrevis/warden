@@ -6,9 +6,15 @@ import withBrowser from '../../withBrowser'
 
 const URL = 'https://www.worldometers.info/coronavirus/'
 
-type Options = {
-  country?: string
+type OptionsForCountry = {
+  country: string
 }
+
+type OptionsForCountries = {
+  countries: [string, ...string[]]
+}
+
+type Options = OptionsForCountry | OptionsForCountries
 
 enum CounterType {
   Infected = 'infected',
@@ -22,7 +28,8 @@ type Result = {
   name: string
   url: string
   meta?: {
-    type: CounterType
+    counterType: CounterType
+    country: string | undefined
     value: number
     diff: number
     valueText: string
@@ -30,25 +37,36 @@ type Result = {
   }
 }
 
+const isOptionsForCountry = (
+  options?: Options,
+): options is OptionsForCountry => {
+  return options !== undefined && 'country' in options
+}
+
+const isOptionsForCountries = (
+  options?: Options,
+): options is OptionsForCountries => {
+  return options !== undefined && 'countries' in options
+}
+
 const formatNumber = (number: number) => {
   // https://stackoverflow.com/a/2901298/458610
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
-const getNumberFrom$Counter = async ($counter: ElementHandle) => {
-  let text = await $counter.evaluate(($) => ($ as HTMLSpanElement).innerText!)
-
-  if (!text) {
+const parseNumber = (string: string) => {
+  if (!string || string === 'N/A') {
     return 0
   }
 
-  text = text.replace(/,/g, '')
+  string = string.replace(/,/g, '')
 
-  return _.parseInt(text)
+  return _.parseInt(string)
 }
 
-const getPreviousNumber = async (
+const getPreviousNumber = (
   counterType: CounterType,
+  country: string | undefined,
   jobState?: JobState,
 ) => {
   if (!jobState) {
@@ -56,7 +74,12 @@ const getPreviousNumber = async (
   }
 
   const maxResult = _.maxBy(
-    _.filter(jobState.results, (result) => result.meta!.type === counterType),
+    _.filter(
+      jobState.results,
+      (result) =>
+        result.meta!.counterType === counterType &&
+        result.meta!.country === country,
+    ),
     (result) => result.meta!.value,
   )
 
@@ -69,22 +92,26 @@ const getPreviousNumber = async (
 
 const createResult = (
   counterType: CounterType,
+  country: string | undefined,
   value: number,
-  prevValue?: number,
+  jobState: JobState | undefined,
 ): Result => {
+  const prevValue = getPreviousNumber(counterType, country, jobState)
+
   const diff = prevValue ? value - prevValue : 0
 
   const valueText = formatNumber(value)
-  const diffText = formatNumber(diff)
+
+  let diffText = formatNumber(diff)
+  diffText = diff > 0 ? '+' + diffText : diffText
 
   return {
-    id: `${counterType}-${value}`,
-    name:
-      `${valueText} ${counterType}` +
-      (diff ? ` (${diff > 0 ? '+' + diffText : diffText})` : ''),
+    id: JSON.stringify({ counterType, country, value }),
+    name: `${valueText} ${counterType}` + (diff ? ` (${diffText})` : ''),
     url: URL,
     meta: {
-      type: counterType,
+      counterType,
+      country,
       value,
       diff,
       valueText,
@@ -92,6 +119,9 @@ const createResult = (
     },
   }
 }
+
+const getText = async ($: ElementHandle) =>
+  $.evaluate(($) => ($ as HTMLElement).innerText!)
 
 const input: Input<Options | undefined> = (options?: Options) => async (
   job,
@@ -102,61 +132,63 @@ const input: Input<Options | undefined> = (options?: Options) => async (
   await withBrowser(async ({ page }) => {
     await page.goto(URL)
 
-    let infected
-    let deaths
-    let recovered
-    let tested
+    let countries: undefined | string[]
 
-    if (options?.country) {
-      await page.type(
-        '#main_table_countries_today_filter input',
-        options.country,
+    if (isOptionsForCountry(options)) {
+      countries = [options.country]
+    } else if (isOptionsForCountries(options)) {
+      countries = options.countries
+    } else {
+      countries = undefined
+    }
+
+    const rows = await Promise.all(
+      _.map(
+        await page.$$(
+          '#main_table_countries_today tr.even, #main_table_countries_today tr.odd',
+        ),
+        async ($row) =>
+          Promise.all(
+            _.map(await $row.$$('td'), async ($column) => getText($column)),
+          ),
+      ),
+    )
+
+    if (countries && countries.length > 1) {
+      const countryRows = _.filter(rows, (columns) =>
+        _.includes(countries, columns[0]),
       )
 
-      const $row = await page.$(
-        '#main_table_countries_today tr.even, #main_table_countries_today tr.odd',
-      )
+      results = _.flatMap(countryRows, (columns) => {
+        const countryName = columns[0]
 
-      const columns = await $row!.$$('td')
+        const infected = parseNumber(columns[1])
+        const deaths = parseNumber(columns[3])
+        const recovered = parseNumber(columns[5])
+        const tested = parseNumber(columns[10])
 
-      infected = await getNumberFrom$Counter(columns[1])
-      deaths = await getNumberFrom$Counter(columns[3])
-      recovered = await getNumberFrom$Counter(columns[5])
-      tested = await getNumberFrom$Counter(columns[10])
+        return [
+          createResult(CounterType.Infected, countryName, infected, jobState),
+          createResult(CounterType.Deaths, countryName, deaths, jobState),
+          createResult(CounterType.Recovered, countryName, recovered, jobState),
+          createResult(CounterType.Tested, countryName, tested, jobState),
+        ]
+      })
     } else {
       const counters = await page.$$('.maincounter-number span')
 
-      const rows = await page.$$(
-        '#main_table_countries_today tr.even, #main_table_countries_today tr.odd',
-      )
-      const testNumbers = await Promise.all(
-        _.map(rows, async ($row) => {
-          const columns = await $row.$$('td')
+      const infected = parseNumber(await getText(counters[0]))
+      const deaths = parseNumber(await getText(counters[1]))
+      const recovered = parseNumber(await getText(counters[2]))
+      const tested = _.sumBy(rows, (columns) => parseNumber(columns[10]))
 
-          return getNumberFrom$Counter(columns[10])
-        }),
-      )
-
-      infected = await getNumberFrom$Counter(counters[0])
-      deaths = await getNumberFrom$Counter(counters[1])
-      recovered = await getNumberFrom$Counter(counters[2])
-      tested = _.sum(testNumbers)
+      results = [
+        createResult(CounterType.Infected, undefined, infected, jobState),
+        createResult(CounterType.Deaths, undefined, deaths, jobState),
+        createResult(CounterType.Recovered, undefined, recovered, jobState),
+        createResult(CounterType.Tested, undefined, tested, jobState),
+      ]
     }
-
-    const prevInfected = await getPreviousNumber(CounterType.Infected, jobState)
-    const prevDeaths = await getPreviousNumber(CounterType.Deaths, jobState)
-    const prevRecovered = await getPreviousNumber(
-      CounterType.Recovered,
-      jobState,
-    )
-    const prevTested = await getPreviousNumber(CounterType.Tested, jobState)
-
-    results = [
-      createResult(CounterType.Infected, infected, prevInfected),
-      createResult(CounterType.Deaths, deaths, prevDeaths),
-      createResult(CounterType.Recovered, recovered, prevRecovered),
-      createResult(CounterType.Tested, tested, prevTested),
-    ]
   })
 
   return results
