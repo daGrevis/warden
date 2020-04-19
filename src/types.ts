@@ -27,8 +27,8 @@ interface Input<Options = undefined> {
   ) => Promise<Results>
 }
 
-interface Filter {
-  (results: Results): Promise<Results>
+interface Pipe {
+  (results: Results): Promise<Results> | Results
 }
 
 interface Output<Options = undefined> {
@@ -43,7 +43,7 @@ type Job = {
   name: string
   scheduleAt?: string
   inputs: ReturnType<Input>[]
-  filters?: Filter[]
+  pipes?: Pipe[]
   outputs: ReturnType<Output>[]
 }
 
@@ -65,14 +65,4 @@ type Config = {
   jobs: Job[]
 }
 
-export {
-  OptionalArgs,
-  Input,
-  Result,
-  Results,
-  State,
-  JobState,
-  Output,
-  Job,
-  Config,
-}
+export { State, JobState, Input, Result, Results, Pipe, Output, Job, Config }

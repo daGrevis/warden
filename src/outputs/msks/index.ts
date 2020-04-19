@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import axios from 'axios'
 
-import { Output, Results } from '../../types'
+import { Output } from '../../types'
 
 type Options = {
   apiRoot: string
@@ -9,7 +9,6 @@ type Options = {
   token: string
   connectionId: string
   channelName: string
-  getTexts?: (results: Results) => string[]
 }
 
 const output: Output<Options> = (options: Options) => async (job, results) => {
@@ -29,9 +28,7 @@ const output: Output<Options> = (options: Options) => async (job, results) => {
       },
     )
 
-  const texts = options.getTexts
-    ? options.getTexts(results)
-    : _.map(results, (result) => result.name)
+  const texts = _.map(results, (result) => result.name)
 
   for (const text of texts) {
     await sendMessage(text)

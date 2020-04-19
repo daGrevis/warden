@@ -29,21 +29,31 @@ myMsks({
 ### Send Name & URL
 
 ```ts
-myMsks({
-  channelName: '#meeseekeria',
-  getTexts: results =>
-    _.map(results, result => `${result.name} ${result.url}`),
-})
+import fp from 'lodash/fp'
+
+const job = {
+  pipes: [
+    fp.map((result) => ({ ...result, name: `${result.name} ${result.url}` })),
+  ],
+  outputs: [
+    myMsks({ channelName: '#meeseekeria' }),
+  ],
+}
 ```
 
 ### Prepend Message
 
 ```ts
-myMsks({
-  channelName: '#meeseekeria',
-  getTexts: results =>
-    ['Results:', ...results.map(result => result.name)],
-})
+import fp from 'lodash/fp'
+
+const job = {
+  pipes: [
+    fp.concat({ id: '', name: 'Results:' }),
+  ],
+  outputs: [
+    myMsks({ channelName: '#meeseekeria' }),
+  ],
+}
 ```
 
 ## Options
@@ -72,10 +82,3 @@ Connection ID of IRC server.
 - _string_
 
 Channel name or nick where messages will be sent to.
-
-#### getTexts?
-- _(results: Results) => string[]_
-
-Optional hook for modifying what texts are sent.
-
-Defaults to sending `name` of each result as is.

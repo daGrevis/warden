@@ -25,8 +25,8 @@ const runInputs = async (job: Job, jobState?: JobState): Promise<Results> =>
           return results
         })
 
-        for (const filter of job.filters ?? []) {
-          results = await filter(results)
+        for (const pipe of job.pipes ?? []) {
+          results = await pipe(results)
         }
 
         return results

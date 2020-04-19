@@ -25,6 +25,21 @@ lobsters({
 })
 ```
 
+### Stories with Some Score
+
+```ts
+import fp from 'lodash/fp'
+
+const job = {
+  inputs: [
+    lobsters(),
+  ],
+  pipes: [
+    fp.filter((result) => result.extra?.score > 40),
+  ],
+}
+```
+
 ## Options
 
 #### section?
