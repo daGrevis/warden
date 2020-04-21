@@ -21,10 +21,7 @@ type Results = Result[]
 type OptionalArgs<T> = T extends undefined ? [] : [T]
 
 interface Input<Options = undefined> {
-  (...args: OptionalArgs<Options>): (
-    job: Job,
-    jobState?: JobState,
-  ) => Promise<Results>
+  (...args: OptionalArgs<Options>): (job: Job) => Promise<Results>
 }
 
 interface Pipe {
