@@ -77,8 +77,8 @@ const getPreviousNumber = (
     _.filter(
       jobState.results,
       (result) =>
-        result.meta!.counterType === counterType &&
-        result.meta!.country === country,
+        result.meta?.counterType === counterType &&
+        result.meta?.country === country,
     ),
     (result) => result.meta!.value,
   )
