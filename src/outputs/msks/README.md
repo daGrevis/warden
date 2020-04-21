@@ -48,7 +48,7 @@ import fp from 'lodash/fp'
 
 const job = {
   pipes: [
-    fp.concat({ id: '', name: 'Results:' }),
+    fp.concat({ id: 'results', name: 'Results:' }),
   ],
   outputs: [
     myMsks({ channelName: '#meeseekeria' }),

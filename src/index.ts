@@ -2,15 +2,15 @@ import _ from 'lodash'
 import * as schedule from 'node-schedule'
 import promiseRetry from 'promise-retry'
 
-import { Config, State, JobState, Job, Results } from './types'
+import { Config, State, Job, Results } from './types'
 import config from './config'
 
-const runInputs = async (job: Job, jobState?: JobState): Promise<Results> =>
+const runInputs = async (job: Job): Promise<Results> =>
   promiseRetry(
     (retry) =>
       (async () => {
         const resultGroups = await Promise.all(
-          _.map(job.inputs, (input): Promise<Results> => input(job, jobState)),
+          _.map(job.inputs, (input): Promise<Results> => input(job)),
         )
 
         let results = _.flatMap(resultGroups, (results, index) => {
@@ -79,7 +79,7 @@ const main = async () => {
     let startResults: Results = []
 
     try {
-      startResults = await runInputs(job, state[job.id])
+      startResults = await runInputs(job)
     } catch (e) {
       console.log(e)
       console.log(`Could not start ${job.id}`)
@@ -101,7 +101,7 @@ const main = async () => {
       const schedulerJob = new schedule.Job(job.id, async () => {
         console.log(`Running ${job.id} as scheduled`)
 
-        const results = await runInputs(job, state[job.id])
+        const results = await runInputs(job)
 
         const resultsById = _.keyBy(results, 'id')
 

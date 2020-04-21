@@ -28,7 +28,10 @@ const MJML_OPTIONS = {
   minify: true,
 }
 
-const sendgrid: Output<Options> = (options: Options) => async (job, results) => {
+const sendgrid: Output<Options> = (options: Options) => async (
+  job,
+  results,
+) => {
   const { apiKey, sender, recipients, debug } = options
   const template = options.template ?? './template.html'
   const asMjml = options.asMjml ?? options.template === undefined

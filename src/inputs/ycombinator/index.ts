@@ -19,7 +19,9 @@ type Result = {
 
 const HOST = 'https://news.ycombinator.com'
 
-const ycombinator: Input<Options | undefined> = (options?: Options) => async () => {
+const ycombinator: Input<Options | undefined> = (
+  options?: Options,
+) => async () => {
   const section = options?.section ?? 'hottest'
 
   let results: Result[] = []

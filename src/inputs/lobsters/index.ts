@@ -31,7 +31,9 @@ const isOptionsForTags = (options?: Options): options is OptionsForTags => {
   return options !== undefined && 'tags' in options
 }
 
-const lobsters: Input<Options | undefined> = (options?: Options) => async () => {
+const lobsters: Input<Options | undefined> = (
+  options?: Options,
+) => async () => {
   const section = options?.section ?? 'hottest'
 
   let results: Result[] = []
