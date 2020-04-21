@@ -1,7 +1,7 @@
 {
   "name": "warden",
   "dependencies": {
-    "@sendgrid/mail": "^7.0.0",
+    "@sendgrid/mail": "^7.0.1",
     "axios": "^0.19.2",
     "dotenv": "^8.2.0",
     "handlebars": "^4.7.6",
@@ -10,19 +10,19 @@
     "node-schedule": "^1.3.2",
     "playwright": "^0.13.0",
     "promise-retry": "^1.1.1",
-    "ts-node": "^8.8.2",
+    "ts-node": "^8.9.0",
     "typescript": "^3.8.2"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/debug": "^4.1.5",
     "@types/dotenv": "^8.2.0",
-    "@types/lodash": "^4.14.149",
+    "@types/lodash": "^4.14.150",
     "@types/mjml": "^4.0.4",
-    "@types/node": "^13.11.1",
+    "@types/node": "^13.13.1",
     "@types/node-schedule": "^1.3.0",
     "@types/promise-retry": "^1.1.3",
-    "prettier": "^2.0.4"
+    "prettier": "^2.0.5"
   },
   "scripts": {
     "start": "ts-node -r dotenv/config src/index.ts",
