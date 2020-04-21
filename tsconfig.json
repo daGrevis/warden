@@ -7,7 +7,7 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "strict": true,
-    "typeRoots" : ["./typings"]
+    "typeRoots" : ["./src/typings"]
   },
   "include": ["./src/**/*"]
 }
