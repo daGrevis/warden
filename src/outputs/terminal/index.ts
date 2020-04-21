@@ -4,7 +4,7 @@ import _ from 'lodash'
 
 import { Output } from '../../types'
 
-const output: Output = () => async (job, results) => {
+const terminal: Output = () => async (job, results) => {
   console.log(
     job.id,
     util.inspect(results, {
@@ -14,4 +14,4 @@ const output: Output = () => async (job, results) => {
   )
 }
 
-export default output
+export default terminal

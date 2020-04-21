@@ -123,7 +123,7 @@ const createResult = (
 const getText = async ($: ElementHandle) =>
   $.evaluate(($) => ($ as HTMLElement).innerText!)
 
-const input: Input<Options | undefined> = (options?: Options) => async (
+const coronavirus: Input<Options | undefined> = (options?: Options) => async (
   job,
   jobState,
 ) => {
@@ -194,4 +194,4 @@ const input: Input<Options | undefined> = (options?: Options) => async (
   return results
 }
 
-export default input
+export default coronavirus

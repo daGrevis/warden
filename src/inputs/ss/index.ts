@@ -153,7 +153,7 @@ const parseResults = async (page: Page, section: string) => {
   ) as Result[]
 }
 
-const input: Input<Options> = (options: Options) => async () => {
+const ss: Input<Options> = (options: Options) => async () => {
   let results: Result[] = []
 
   await withBrowser(async ({ page }) => {
@@ -174,4 +174,4 @@ const input: Input<Options> = (options: Options) => async () => {
   return results
 }
 
-export default input
+export default ss

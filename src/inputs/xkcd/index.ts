@@ -13,7 +13,7 @@ type Result = {
 
 const HOST = 'https://xkcd.com/'
 
-const input: Input = () => async () => {
+const xkcd: Input = () => async () => {
   let results: Result[] = []
 
   await withBrowser(async ({ page }) => {
@@ -49,4 +49,4 @@ const input: Input = () => async () => {
   return results
 }
 
-export default input
+export default xkcd

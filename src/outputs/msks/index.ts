@@ -11,7 +11,7 @@ type Options = {
   channelName: string
 }
 
-const output: Output<Options> = (options: Options) => async (job, results) => {
+const msks: Output<Options> = (options: Options) => async (job, results) => {
   const sendMessage = (text: string) =>
     axios.post(
       `${options.apiRoot}/commands/query`,
@@ -35,4 +35,4 @@ const output: Output<Options> = (options: Options) => async (job, results) => {
   }
 }
 
-export default output
+export default msks

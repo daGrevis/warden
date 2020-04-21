@@ -4,7 +4,7 @@ type Options = {
   data?: Results[]
 }
 
-const input: Input<Options | undefined> = (options?: Options) => {
+const dumb: Input<Options | undefined> = (options?: Options) => {
   let index = -1
 
   return async () => {
@@ -20,4 +20,4 @@ const input: Input<Options | undefined> = (options?: Options) => {
   }
 }
 
-export default input
+export default dumb
