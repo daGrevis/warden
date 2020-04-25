@@ -71,25 +71,18 @@ const coronavirus: Input<Options | undefined> = (options?: Options) => {
     prevResults: [],
   }
 
-  const getPrevNumber = (
+  const getPrevValue = (
     counterType: CounterType,
     country: string | undefined,
   ) => {
-    const maxResult = _.maxBy(
-      _.filter(
-        state.prevResults,
-        (result) =>
-          result.meta?.counterType === counterType &&
-          result.meta?.country === country,
-      ),
-      (result) => result.meta!.value,
+    const prevResult = _.find(
+      state.prevResults,
+      (result) =>
+        result.meta?.counterType === counterType &&
+        result.meta?.country === country,
     )
 
-    if (!maxResult) {
-      return undefined
-    }
-
-    return maxResult.meta!.value
+    return prevResult?.meta?.value
   }
 
   const createResult = (
@@ -97,7 +90,7 @@ const coronavirus: Input<Options | undefined> = (options?: Options) => {
     country: string | undefined,
     value: number,
   ): Result => {
-    const prevValue = getPrevNumber(counterType, country)
+    const prevValue = getPrevValue(counterType, country)
 
     const diff = prevValue ? value - prevValue : 0
 
