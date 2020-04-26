@@ -24,8 +24,10 @@ interface Input<Options = undefined> {
   (...args: OptionalArgs<Options>): (job: Job) => Promise<Results>
 }
 
-interface Pipe {
-  (results: Results): Promise<Results> | Results
+interface Pipe<Options = undefined> {
+  (...args: OptionalArgs<Options>): (
+    results: Results,
+  ) => Promise<Results> | Results
 }
 
 interface Output<Options = undefined> {
@@ -40,7 +42,7 @@ type Job = {
   name: string
   scheduleAt?: string
   inputs: ReturnType<Input>[]
-  pipes?: Pipe[]
+  pipes?: ReturnType<Pipe>[]
   outputs: ReturnType<Output>[]
 }
 

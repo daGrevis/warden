@@ -28,14 +28,14 @@ lobsters({
 ### Stories with Some Score
 
 ```ts
-import fp from 'lodash/fp'
+import filter from './pipes/filter'
 
 const job = {
   inputs: [
     lobsters(),
   ],
   pipes: [
-    fp.filter((result) => result.extra?.score > 40),
+    filter({ by: (result) => result.extra?.score > 40 }),
   ],
 }
 ```

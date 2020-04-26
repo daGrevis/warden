@@ -29,26 +29,13 @@ myMsks({
 ### Send Name & URL
 
 ```ts
-import fp from 'lodash/fp'
+import map from './pipes/map'
 
 const job = {
   pipes: [
-    fp.map((result) => ({ ...result, name: `${result.name} ${result.url}` })),
-  ],
-  outputs: [
-    myMsks({ channelName: '#meeseekeria' }),
-  ],
-}
-```
-
-### Prepend Message
-
-```ts
-import fp from 'lodash/fp'
-
-const job = {
-  pipes: [
-    fp.concat({ id: 'results', name: 'Results:' }),
+    map({
+      to: (result) => ({ ...result, name: `${result.name} ${result.url}` }),
+    }),
   ],
   outputs: [
     myMsks({ channelName: '#meeseekeria' }),
