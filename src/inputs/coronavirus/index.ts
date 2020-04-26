@@ -31,14 +31,7 @@ type Result = {
     counterType: CounterType
     country: string | undefined
     value: number
-    diff: number
-    valueText: string
-    diffText: string
   }
-}
-
-type State = {
-  prevResults: Result[]
 }
 
 const isOptionsForCountry = (options?: Options): options is OptionsForCountry =>
@@ -48,10 +41,6 @@ const isOptionsForCountries = (
   options?: Options,
 ): options is OptionsForCountries =>
   options !== undefined && 'countries' in options
-
-const formatNumber = (number: number) =>
-  // https://stackoverflow.com/a/2901298/458610
-  number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 
 const parseNumber = (string: string) => {
   if (!string || string === 'N/A') {
@@ -66,123 +55,91 @@ const parseNumber = (string: string) => {
 const getText = async ($: ElementHandle) =>
   $.evaluate(($) => ($ as HTMLElement).innerText!)
 
-const coronavirus: Input<Options | undefined> = (options?: Options) => {
-  const state: State = {
-    prevResults: [],
+const createResult = (
+  counterType: CounterType,
+  country: string | undefined,
+  value: number,
+): Result => {
+  return {
+    id: JSON.stringify({ counterType, country, value }),
+    name: `${value} ${counterType}`,
+    url: URL,
+    meta: {
+      counterType,
+      country,
+      value,
+    },
   }
+}
 
-  const getPrevValue = (
-    counterType: CounterType,
-    country: string | undefined,
-  ) => {
-    const prevResult = _.find(
-      state.prevResults,
-      (result) =>
-        result.meta?.counterType === counterType &&
-        result.meta?.country === country,
+const coronavirus: Input<Options | undefined> = (
+  options?: Options,
+) => async () => {
+  let results: Result[] = []
+
+  await withBrowser(async ({ page }) => {
+    await page.goto(URL)
+
+    let countries: undefined | string[]
+
+    if (isOptionsForCountry(options)) {
+      countries = [options.country]
+    } else if (isOptionsForCountries(options)) {
+      countries = options.countries
+    } else {
+      countries = undefined
+    }
+
+    const rows = await Promise.all(
+      _.map(
+        await page.$$(
+          '#main_table_countries_today tr.even, #main_table_countries_today tr.odd',
+        ),
+        async ($row) =>
+          Promise.all(
+            _.map(await $row.$$('td'), async ($column) => getText($column)),
+          ),
+      ),
     )
 
-    return prevResult?.meta?.value
-  }
-
-  const createResult = (
-    counterType: CounterType,
-    country: string | undefined,
-    value: number,
-  ): Result => {
-    const prevValue = getPrevValue(counterType, country)
-
-    const diff = prevValue ? value - prevValue : 0
-
-    const valueText = formatNumber(value)
-
-    let diffText = formatNumber(diff)
-    diffText = diff > 0 ? '+' + diffText : diffText
-
-    return {
-      id: JSON.stringify({ counterType, country, value }),
-      name: `${valueText} ${counterType}` + (diff ? ` (${diffText})` : ''),
-      url: URL,
-      meta: {
-        counterType,
-        country,
-        value,
-        diff,
-        valueText,
-        diffText,
-      },
-    }
-  }
-
-  return async () => {
-    let results: Result[] = []
-
-    await withBrowser(async ({ page }) => {
-      await page.goto(URL)
-
-      let countries: undefined | string[]
-
-      if (isOptionsForCountry(options)) {
-        countries = [options.country]
-      } else if (isOptionsForCountries(options)) {
-        countries = options.countries
-      } else {
-        countries = undefined
-      }
-
-      const rows = await Promise.all(
-        _.map(
-          await page.$$(
-            '#main_table_countries_today tr.even, #main_table_countries_today tr.odd',
-          ),
-          async ($row) =>
-            Promise.all(
-              _.map(await $row.$$('td'), async ($column) => getText($column)),
-            ),
-        ),
+    if (countries && countries.length > 0) {
+      const countryRows = _.filter(rows, (columns) =>
+        _.includes(countries, columns[0]),
       )
 
-      if (countries && countries.length > 0) {
-        const countryRows = _.filter(rows, (columns) =>
-          _.includes(countries, columns[0]),
-        )
+      results = _.flatMap(countryRows, (columns) => {
+        const countryName = columns[0]
 
-        results = _.flatMap(countryRows, (columns) => {
-          const countryName = columns[0]
+        const infected = parseNumber(columns[1])
+        const deaths = parseNumber(columns[3])
+        const recovered = parseNumber(columns[5])
+        const tested = parseNumber(columns[10])
 
-          const infected = parseNumber(columns[1])
-          const deaths = parseNumber(columns[3])
-          const recovered = parseNumber(columns[5])
-          const tested = parseNumber(columns[10])
-
-          return [
-            createResult(CounterType.Infected, countryName, infected),
-            createResult(CounterType.Deaths, countryName, deaths),
-            createResult(CounterType.Recovered, countryName, recovered),
-            createResult(CounterType.Tested, countryName, tested),
-          ]
-        })
-      } else {
-        const counters = await page.$$('.maincounter-number span')
-
-        const infected = parseNumber(await getText(counters[0]))
-        const deaths = parseNumber(await getText(counters[1]))
-        const recovered = parseNumber(await getText(counters[2]))
-        const tested = _.sumBy(rows, (columns) => parseNumber(columns[10]))
-
-        results = [
-          createResult(CounterType.Infected, undefined, infected),
-          createResult(CounterType.Deaths, undefined, deaths),
-          createResult(CounterType.Recovered, undefined, recovered),
-          createResult(CounterType.Tested, undefined, tested),
+        return [
+          createResult(CounterType.Infected, countryName, infected),
+          createResult(CounterType.Deaths, countryName, deaths),
+          createResult(CounterType.Recovered, countryName, recovered),
+          createResult(CounterType.Tested, countryName, tested),
         ]
-      }
-    })
+      })
+    } else {
+      const counters = await page.$$('.maincounter-number span')
 
-    state.prevResults = results
+      const infected = parseNumber(await getText(counters[0]))
+      const deaths = parseNumber(await getText(counters[1]))
+      const recovered = parseNumber(await getText(counters[2]))
+      const tested = _.sumBy(rows, (columns) => parseNumber(columns[10]))
 
-    return results
-  }
+      results = [
+        createResult(CounterType.Infected, undefined, infected),
+        createResult(CounterType.Deaths, undefined, deaths),
+        createResult(CounterType.Recovered, undefined, recovered),
+        createResult(CounterType.Tested, undefined, tested),
+      ]
+    }
+  })
+
+  return results
 }
 
 export default coronavirus
