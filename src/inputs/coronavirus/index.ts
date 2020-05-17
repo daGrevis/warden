@@ -35,6 +35,14 @@ type Result = {
   }
 }
 
+enum ColumnIndex {
+  Name = 1,
+  Infected = 2,
+  Deaths = 4,
+  Recovered = 6,
+  Tested = 11,
+}
+
 const isOptionsForCountry = (options?: Options): options is OptionsForCountry =>
   options !== undefined && 'country' in options
 
@@ -105,7 +113,7 @@ const coronavirus: Input<Options | undefined> = (
 
     if (countries && countries.length > 0) {
       const countryRows = _.filter(rows, (columns) =>
-        _.includes(countries, columns[1]),
+        _.includes(countries, columns[ColumnIndex.Name]),
       )
 
       assert(
@@ -114,12 +122,12 @@ const coronavirus: Input<Options | undefined> = (
       )
 
       results = _.flatMap(countryRows, (columns) => {
-        const countryName = columns[1]
+        const countryName = columns[ColumnIndex.Name]
 
-        const infected = parseNumber(columns[2])
-        const deaths = parseNumber(columns[3])
-        const recovered = parseNumber(columns[5])
-        const tested = parseNumber(columns[10])
+        const infected = parseNumber(columns[ColumnIndex.Infected])
+        const deaths = parseNumber(columns[ColumnIndex.Deaths])
+        const recovered = parseNumber(columns[ColumnIndex.Recovered])
+        const tested = parseNumber(columns[ColumnIndex.Tested])
 
         return [
           createResult(CounterType.Infected, countryName, infected),
@@ -134,7 +142,9 @@ const coronavirus: Input<Options | undefined> = (
       const infected = parseNumber(await getText(counters[0]))
       const deaths = parseNumber(await getText(counters[1]))
       const recovered = parseNumber(await getText(counters[2]))
-      const tested = _.sumBy(rows, (columns) => parseNumber(columns[10]))
+      const tested = _.sumBy(rows, (columns) =>
+        parseNumber(columns[ColumnIndex.Tested]),
+      )
 
       results = [
         createResult(CounterType.Infected, undefined, infected),
