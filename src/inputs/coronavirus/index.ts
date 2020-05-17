@@ -104,13 +104,13 @@ const coronavirus: Input<Options | undefined> = (
 
     if (countries && countries.length > 0) {
       const countryRows = _.filter(rows, (columns) =>
-        _.includes(countries, columns[0]),
+        _.includes(countries, columns[1]),
       )
 
       results = _.flatMap(countryRows, (columns) => {
-        const countryName = columns[0]
+        const countryName = columns[1]
 
-        const infected = parseNumber(columns[1])
+        const infected = parseNumber(columns[2])
         const deaths = parseNumber(columns[3])
         const recovered = parseNumber(columns[5])
         const tested = parseNumber(columns[10])
