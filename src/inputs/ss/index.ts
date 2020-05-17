@@ -2,6 +2,7 @@ import _ from 'lodash'
 import { Page, ElementHandle } from 'playwright'
 
 import { Input } from '../../types'
+import assert from '../../assert'
 import withBrowser from '../../withBrowser'
 import { FilterOptions, FilterDefinition, filterDefinitions } from './filters'
 
@@ -53,14 +54,16 @@ const applyFilters = async (page: Page, filterOptions?: FilterOptions) => {
 
   for (const filter of filters) {
     const $filter = await page.$(filter.selector)
-    const tagName = await $filter!.evaluate(($) => $.tagName)
+    assert($filter, 'Could not find $filter!')
+
+    const tagName = await $filter.evaluate(($) => $.tagName)
 
     if (tagName === 'INPUT') {
-      await $filter!.type(`${filter.value}`)
+      await $filter.type(`${filter.value}`)
 
       needsSubmitting = true
     } else if (tagName === 'SELECT') {
-      await $filter!.selectOption(`${filter.value}`)
+      await $filter.selectOption(`${filter.value}`)
 
       needsSubmitting = false
     }
@@ -68,8 +71,9 @@ const applyFilters = async (page: Page, filterOptions?: FilterOptions) => {
 
   if (needsSubmitting) {
     const $submitButton = await page.$('.s12')
+    assert($submitButton, 'Could not find $submitButton!')
 
-    await $submitButton!.click()
+    await $submitButton.click()
   }
 }
 
@@ -97,7 +101,9 @@ const parseResults = async (page: Page, section: string) => {
     '#filter_frm .filter_second_line_dv + table',
   )
 
-  let rows = await $resultsTable!.$$('tr')
+  assert($resultsTable, 'Could not find $resultsTable!')
+
+  const rows = await $resultsTable.$$('tr')
 
   return _.reject(
     await Promise.all(
@@ -116,25 +122,33 @@ const parseResults = async (page: Page, section: string) => {
           )
           const url = `${HOST}${href}`
 
-          const [, id] = url.match(/([^\/]+)\.html$/)!
+          const idMatch = url.match(/([^\/]+)\.html$/)
+          assert(idMatch, 'Could not match id!')
+          const [, id] = idMatch
 
           const name = getName(url, section)
 
           const description = await $anchor.evaluate(
-            ($) => ($ as HTMLAnchorElement).textContent!,
+            ($) => ($ as HTMLAnchorElement).textContent,
           )
+          assert(description, 'Could not find description!')
 
           const $thumbnail = await $row.$('.msga2:nth-child(2) .isfoto')
-          const thumbnailUrl = await $thumbnail!.evaluate(($) =>
+          assert($thumbnail, 'Could not find $thumbnail!')
+          const thumbnailUrl = await $thumbnail.evaluate(($) =>
             ($ as HTMLImageElement).getAttribute('src'),
           )
-          const imageUrl = thumbnailUrl!.replace('th2', '800')
+          assert(thumbnailUrl, 'Could not find thumbnailUrl!')
+          const imageUrl = thumbnailUrl.replace('th2', '800')
 
           const cells = await $row.$$('td')
 
           const $priceCell = _.last(cells)
-          const $priceAnchor = await $priceCell!.$('a')
-          const price = await $priceAnchor!.evaluate(($) => $.textContent!)
+          assert($priceCell, 'Could not find $priceCell!')
+          const $priceAnchor = await $priceCell.$('a')
+          assert($priceAnchor, 'Could not find $priceAnchor!')
+          const price = await $priceAnchor.evaluate(($) => $.textContent)
+          assert(price, 'Could not find price!')
 
           return {
             id,

@@ -2,6 +2,7 @@ import _ from 'lodash'
 import { ElementHandle } from 'playwright'
 
 import { Input } from '../../types'
+import assert from '../../assert'
 import withBrowser from '../../withBrowser'
 
 const URL = 'https://www.worldometers.info/coronavirus/'
@@ -53,7 +54,7 @@ const parseNumber = (string: string) => {
 }
 
 const getText = async ($: ElementHandle) =>
-  $.evaluate(($) => ($ as HTMLElement).innerText!)
+  $.evaluate(($) => ($ as HTMLElement).innerText)
 
 const createResult = (
   counterType: CounterType,
@@ -105,6 +106,11 @@ const coronavirus: Input<Options | undefined> = (
     if (countries && countries.length > 0) {
       const countryRows = _.filter(rows, (columns) =>
         _.includes(countries, columns[1]),
+      )
+
+      assert(
+        countryRows.length === countries.length,
+        'Not all countries found!',
       )
 
       results = _.flatMap(countryRows, (columns) => {
