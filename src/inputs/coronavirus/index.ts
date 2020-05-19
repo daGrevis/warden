@@ -159,3 +159,4 @@ const coronavirus: Input<Options | undefined> = (
 }
 
 export default coronavirus
+export { CounterType }
