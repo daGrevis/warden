@@ -1,3 +1,8 @@
+enum Condition {
+  New = '6751',
+  Used = '6752',
+}
+
 enum FuelType {
   Gasoline = '493',
   Diesel = '494',
@@ -23,12 +28,21 @@ enum BodyType {
   Other = '24775',
 }
 
+enum FridgeType {
+  Below = '113051',
+  Above = '113052',
+  Standalone = '113054',
+  SideBySide = '113053',
+  French = '113151',
+}
+
 type AllRequiredFilterOptions = {
   // Generic
   priceMin: number
   priceMax: number
   yearMin: number
   yearMax: number
+  condition: Condition
 
   // Real estate
   roomsMin: 1 | 2 | 3 | 4 | 5 | 6
@@ -46,6 +60,9 @@ type AllRequiredFilterOptions = {
   fuelType: FuelType
   transmission: Transmission
   bodyType: BodyType
+
+  // Electronics
+  fridgeType: FridgeType
 }
 
 type FilterOptions = Partial<AllRequiredFilterOptions>
@@ -72,6 +89,10 @@ const filterDefinitions: FilterDefinitions = {
   yearMax: {
     selector: '#f_o_18_max',
     name: 'Year max',
+  },
+  condition: {
+    selector: '#f_o_352',
+    name: 'Condition',
   },
 
   roomsMin: {
@@ -127,6 +148,11 @@ const filterDefinitions: FilterDefinitions = {
     selector: '#f_o_32',
     name: 'Body type',
   },
+
+  fridgeType: {
+    selector: '#f_o_1663',
+    name: 'Fridge type',
+  },
 }
 
 export {
@@ -134,7 +160,9 @@ export {
   FilterDefinition,
   FilterDefinitions,
   FilterOptions,
+  Condition,
   FuelType,
   Transmission,
   BodyType,
+  FridgeType,
 }
