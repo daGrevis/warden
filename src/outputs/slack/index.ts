@@ -10,25 +10,45 @@ type Options = {
   channel: string
 }
 
+type Result = {
+  id: string
+  name: string
+  meta?: {
+    blocks?: (Block | undefined)[]
+  }
+}
+
+type Block = {
+  [key: string]: any
+  type: string
+}
+
+type RequestData = {
+  channel: string
+  text: string
+  blocks?: Block[]
+}
+
 const slack: Output<Options> = (options: Options) => async (job, results) => {
-  const sendMessage = (text: string) =>
-    axios.post(
-      `${API_ROOT}/chat.postMessage`,
-      {
-        channel: options.channel,
-        text,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${options.token}`,
-        },
-      },
-    )
+  const sendMessage = (result: Result) => {
+    const data: RequestData = {
+      channel: options.channel,
+      text: result.name,
+    }
 
-  const texts = _.map(results, (result) => result.name)
+    if (result.meta?.blocks) {
+      data.blocks = _.compact(result.meta!.blocks)
+    }
 
-  for (const text of texts) {
-    const response = await sendMessage(text)
+    return axios.post(`${API_ROOT}/chat.postMessage`, data, {
+      headers: {
+        Authorization: `Bearer ${options.token}`,
+      },
+    })
+  }
+
+  for (const result of results) {
+    const response = await sendMessage(result)
 
     if (response.status !== 200 || !response.data?.ok) {
       console.log(response)
