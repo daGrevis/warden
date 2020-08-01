@@ -1,7 +1,8 @@
 import _ from 'lodash'
-import { ElementHandle } from 'playwright'
+import { Page, ElementHandle } from 'playwright'
 
 import { Input } from '../../types'
+import assert from '../../assert'
 import withBrowser from '../../withBrowser'
 
 type Options = {
@@ -13,73 +14,98 @@ type Result = {
   name: string
   url: string
   imageUrl?: string
+  meta: {
+    page: string
+    pageTitle: string
+  }
 }
 
 const HOST = 'https://www.facebook.com'
 
 const POSTS_SELECTOR = '._1xnd' // This will probably break any time now.
 
-const parseResult = async (
-  $post: ElementHandle,
-): Promise<Result | undefined> => {
-  const $timestamp = await $post.$('[data-testid="story-subtitle"] a')
+const parseResults = async (page: Page, options: Options) => {
+  const posts = await page.$$(`${POSTS_SELECTOR} > div`)
 
-  if (!$timestamp) {
-    return undefined
-  }
+  const $ogTitle = await page.$('meta[property="og:title"]')
+  assert($ogTitle, 'Could not find $ogTitle!')
 
-  let url = await $timestamp.evaluate(($) => ($ as HTMLAnchorElement).href)
+  const pageTitle = await $ogTitle.evaluate(($) => $.getAttribute('content')!)
 
-  const urlObject = new URL(url)
+  return _.reject(
+    await Promise.all(
+      _.map(
+        posts,
+        async ($post: ElementHandle): Promise<Result | undefined> => {
+          const $timestamp = await $post.$('[data-testid="story-subtitle"] a')
 
-  // Gets rid of query params.
-  url = urlObject.origin + urlObject.pathname
+          if (!$timestamp) {
+            return undefined
+          }
 
-  const segments = _.reject(
-    _.split(urlObject.pathname, '/'),
-    (segment) => segment === '' || segment === '/',
-  )
+          let url = await $timestamp.evaluate(
+            ($) => ($ as HTMLAnchorElement).href,
+          )
 
-  if (segments[0] === 'events') {
-    // TODO: Handle events.
-    return undefined
-  }
+          const urlObject = new URL(url)
 
-  const id = _.last(segments)!
+          // Gets rid of query params.
+          url = urlObject.origin + urlObject.pathname
 
-  const $userContent = await $post.$('.userContent')
+          const segments = _.reject(
+            _.split(urlObject.pathname, '/'),
+            (segment) => segment === '' || segment === '/',
+          )
 
-  if (!$userContent) {
-    return undefined
-  }
+          if (segments[0] === 'events') {
+            // TODO: Handle events.
+            return undefined
+          }
 
-  let name = ''
-  const $textImage = await $userContent.$('span:nth-child(2) span')
-  if ($textImage) {
-    name = await $textImage.evaluate(($) => $.textContent!)
-  } else {
-    name = await $userContent.evaluate(($) => $.textContent!)
-  }
+          const id = _.last(segments)!
 
-  const $image = await $post.$('.mtm img')
-  let imageUrl = undefined
-  if ($image) {
-    imageUrl = await $image.evaluate(
-      ($) => ($ as HTMLImageElement).getAttribute('src')!,
-    )
-  }
+          const $userContent = await $post.$('.userContent')
 
-  let result: Result = {
-    id,
-    name,
-    url,
-  }
+          if (!$userContent) {
+            return undefined
+          }
 
-  if (imageUrl) {
-    result.imageUrl = imageUrl
-  }
+          let name = ''
+          const $textImage = await $userContent.$('span:nth-child(2) span')
+          if ($textImage) {
+            name = await $textImage.evaluate(($) => $.textContent!)
+          } else {
+            name = await $userContent.evaluate(($) => $.textContent!)
+          }
 
-  return result
+          const $image = await $post.$('.mtm img')
+          let imageUrl = undefined
+          if ($image) {
+            imageUrl = await $image.evaluate(
+              ($) => ($ as HTMLImageElement).getAttribute('src')!,
+            )
+          }
+
+          let result: Result = {
+            id,
+            name,
+            url,
+            meta: {
+              page: options.page,
+              pageTitle,
+            },
+          }
+
+          if (imageUrl) {
+            result.imageUrl = imageUrl
+          }
+
+          return result
+        },
+      ),
+    ),
+    _.isUndefined,
+  ) as Result[]
 }
 
 const facebook: Input<Options> = (options: Options) => async () => {
@@ -90,12 +116,7 @@ const facebook: Input<Options> = (options: Options) => async () => {
 
     await page.waitForSelector(POSTS_SELECTOR)
 
-    results = _.reject(
-      await Promise.all(
-        _.map(await page.$$(`${POSTS_SELECTOR} > div`), parseResult),
-      ),
-      _.isUndefined,
-    ) as Result[]
+    results = await parseResults(page, options)
   })
 
   return results
