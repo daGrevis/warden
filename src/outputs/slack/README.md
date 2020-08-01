@@ -9,7 +9,7 @@ Optionally use `meta.blocks` for customizing messages via [Block Kit](https://ap
 ### Send to #general
 
 ```ts
-mySlack({
+slack({
   token: process.env.SLACK_TOKEN,
   channel: '#general',
 })
