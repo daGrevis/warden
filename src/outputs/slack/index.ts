@@ -28,7 +28,12 @@ const slack: Output<Options> = (options: Options) => async (job, results) => {
   const texts = _.map(results, (result) => result.name)
 
   for (const text of texts) {
-    await sendMessage(text)
+    const response = await sendMessage(text)
+
+    if (response.status !== 200 || !response.data?.ok) {
+      console.log(response)
+      throw Error('Could not send message via outputs/slack')
+    }
   }
 }
 
