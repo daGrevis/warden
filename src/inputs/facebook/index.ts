@@ -71,7 +71,9 @@ const parseResults = async (page: Page, options: Options) => {
           }
 
           let name = ''
-          const $textImage = await $userContent.$('span:nth-child(2) span')
+          const $textImage = await $userContent.$(
+            'div > span:nth-child(2) span',
+          )
           if ($textImage) {
             name = await $textImage.evaluate(($) => $.textContent!)
           } else {
