@@ -19,7 +19,7 @@ type Options = {
 }
 
 const FILE_OPTIONS = {
-  encoding: 'utf8',
+  encoding: 'utf8' as const,
 }
 
 const MJML_OPTIONS = {

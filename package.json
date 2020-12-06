@@ -1,28 +1,28 @@
 {
   "name": "warden",
   "dependencies": {
-    "@sendgrid/mail": "^7.0.1",
-    "axios": "^0.19.2",
+    "@sendgrid/mail": "^7.4.0",
+    "axios": "^0.21.0",
     "dotenv": "^8.2.0",
     "handlebars": "^4.7.6",
-    "lodash": "^4.17.15",
-    "mjml": "^4.5.1",
+    "lodash": "^4.17.20",
+    "mjml": "^4.7.1",
     "node-schedule": "^1.3.2",
-    "playwright": "^0.13.0",
-    "promise-retry": "^1.1.1",
-    "ts-node": "^8.9.0",
-    "typescript": "^3.8.2"
+    "playwright": "^1.6.2",
+    "promise-retry": "^2.0.1",
+    "ts-node": "^9.1.0",
+    "typescript": "^4.1.2"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/debug": "^4.1.5",
     "@types/dotenv": "^8.2.0",
-    "@types/lodash": "^4.14.150",
+    "@types/lodash": "^4.14.165",
     "@types/mjml": "^4.0.4",
-    "@types/node": "^13.13.1",
-    "@types/node-schedule": "^1.3.0",
+    "@types/node": "^14.14.10",
+    "@types/node-schedule": "^1.3.1",
     "@types/promise-retry": "^1.1.3",
-    "prettier": "^2.0.5"
+    "prettier": "^2.2.1"
   },
   "scripts": {
     "start": "ts-node -r dotenv/config src/index.ts",
