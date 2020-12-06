@@ -11,7 +11,7 @@ export default async (
 ) => {
   const timeout = config.browser?.timeout ?? 30 * 1000
 
-  const driver = playwright.webkit
+  const driver = playwright[config?.browser?.driver ?? 'webkit']
 
   const browser = await driver.launch({
     timeout,

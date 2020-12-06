@@ -49,6 +49,7 @@ type Job = {
 type Config = {
   timezone?: string
   browser?: {
+    driver?: 'webkit' | 'firefox' | 'chromium'
     timeout?: number
     headless?: boolean
     slowMo?: number
