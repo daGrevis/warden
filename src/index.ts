@@ -9,9 +9,11 @@ const runInputs = async (job: Job): Promise<Results> =>
   promiseRetry(
     (retry) =>
       (async () => {
+        console.log(`Running inputs for ${job.id}`)
         const resultGroups = await Promise.all(
           _.map(job.inputs, (input): Promise<Results> => input(job)),
         )
+        console.log(`Ran inputs for ${job.id}`)
 
         let results = _.flatMap(resultGroups, (results, index) => {
           if (resultGroups.length > 1) {
@@ -25,9 +27,11 @@ const runInputs = async (job: Job): Promise<Results> =>
           return results
         })
 
+        console.log(`Running pipes for ${job.id}`)
         for (const pipe of job.pipes ?? []) {
           results = await pipe(results)
         }
+        console.log(`Ran pipes for ${job.id}`)
 
         return results
       })().catch((e) => {
@@ -47,7 +51,9 @@ const runOutputs = async (job: Job, results: Results): Promise<void> => {
           return
         }
 
+        console.log(`Running outputs for ${job.id}`)
         await Promise.all(_.map(job.outputs, (output) => output(job, results)))
+        console.log(`Ran outputs for ${job.id}`)
       })().catch((e) => {
         console.log(e)
         console.log(`Retrying runOutputs for ${job.id}`)
@@ -95,6 +101,7 @@ const main = async () => {
       console.log(`Running ${job.id} at start once`)
 
       await runOutputs(job, startResults)
+      console.log(`Ran ${job.id} at start`)
     } else {
       console.log(`Scheduling ${job.id} at ${job.scheduleAt}`)
 
