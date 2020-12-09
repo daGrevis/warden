@@ -65,10 +65,18 @@ const runOutputs = async (job: Job, results: Results): Promise<void> => {
 }
 
 const checkConfig = (config: Config) => {
+  const { jobs } = config
+
+  if (jobs.length === 0) {
+    console.log('Error: No jobs to run, nothing to do')
+    process.exit(1)
+  }
+
   const jobIds = new Set()
-  for (const job of config.jobs) {
+  for (const job of jobs) {
     if (jobIds.has(job.id)) {
-      throw Error(`Job ${job.id} is already defined`)
+      console.log(`Error: Job ${job.id} is already defined`)
+      process.exit(1)
     }
     jobIds.add(job.id)
   }
