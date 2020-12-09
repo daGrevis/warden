@@ -1,3 +1,6 @@
 **/*/node_modules
 **/*.log
 .DS_Store
+**/config.ts
+**/config.*.ts
+**/*/configs
