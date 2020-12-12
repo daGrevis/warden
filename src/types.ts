@@ -20,15 +20,19 @@ type Results = Result[]
 
 type OptionalArgs<T> = T extends undefined ? [] : [T]
 
-interface Input<Options = undefined> {
-  (...args: OptionalArgs<Options>): (job: Job) => Promise<Results> | Results
-}
-
 interface Pipe<Options = undefined> {
   (...args: OptionalArgs<Options>): (
     results: Results,
   ) => Promise<Results> | Results
 }
+
+type PipeReturn = ReturnType<Pipe>
+
+interface Input<Options = undefined> {
+  (...args: OptionalArgs<Options>): (job: Job) => Promise<Results> | Results
+}
+
+type InputReturn = ReturnType<Input>
 
 interface Output<Options = undefined> {
   (...args: OptionalArgs<Options>): (
@@ -37,13 +41,15 @@ interface Output<Options = undefined> {
   ) => Promise<void> | void
 }
 
+type OutputReturn = ReturnType<Output>
+
 type Job = {
   id: string
   name: string
   scheduleAt?: string
-  inputs: ReturnType<Input>[]
-  pipes?: ReturnType<Pipe>[]
-  outputs: ReturnType<Output>[]
+  inputs: (InputReturn | [InputReturn, ...PipeReturn[]])[]
+  pipes?: PipeReturn[]
+  outputs: (OutputReturn | [OutputReturn, ...PipeReturn[]])[]
 }
 
 type Config = {
@@ -65,4 +71,17 @@ type Config = {
   jobs: Job[]
 }
 
-export { State, JobState, Input, Result, Results, Pipe, Output, Job, Config }
+export {
+  State,
+  JobState,
+  Result,
+  Results,
+  Pipe,
+  PipeReturn,
+  Input,
+  InputReturn,
+  Output,
+  OutputReturn,
+  Job,
+  Config,
+}

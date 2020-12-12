@@ -2,8 +2,30 @@ import _ from 'lodash'
 import * as schedule from 'node-schedule'
 import promiseRetry from 'promise-retry'
 
-import { Config, State, Job, Results } from './types'
+import {
+  Config,
+  State,
+  Job,
+  Results,
+  PipeReturn,
+  InputReturn,
+  OutputReturn,
+} from './types'
 import config from './config'
+
+const isInput = (input: Job['inputs'][0]): input is InputReturn =>
+  _.isFunction(input)
+
+const isOutput = (output: Job['outputs'][0]): output is OutputReturn =>
+  _.isFunction(output)
+
+const runPipes = async (results: Results, pipes: PipeReturn[]) => {
+  for (const pipe of pipes) {
+    results = await pipe(results)
+  }
+
+  return results
+}
 
 const runInputs = async (job: Job): Promise<Results> =>
   promiseRetry(
@@ -11,15 +33,33 @@ const runInputs = async (job: Job): Promise<Results> =>
       (async () => {
         console.log(`Running inputs for ${job.id}`)
         const resultGroups = await Promise.all(
-          _.map(
-            job.inputs,
-            async (input): Promise<Results> => await input(job),
-          ),
+          _.map(job.inputs, async (inputConfig) => {
+            let input
+            let pipes: PipeReturn[] = []
+
+            if (isInput(inputConfig)) {
+              input = inputConfig
+              pipes = []
+            } else {
+              input = inputConfig[0]
+              pipes = _.slice(inputConfig, 1) as PipeReturn[]
+            }
+
+            let results = await input(job)
+
+            if (pipes.length) {
+              console.log(`Running pipes for ${job.id} input`)
+              results = await runPipes(results, pipes)
+              console.log(`Ran pipes for ${job.id} input`)
+            }
+
+            return results
+          }),
         )
         console.log(`Ran inputs for ${job.id}`)
 
         let results = _.flatMap(resultGroups, (results, index) => {
-          if (resultGroups.length > 1) {
+          if (resultGroups.length) {
             // Prefix ID with index to avoid duplicates between inputs.
             return _.map(results, (result) => ({
               ...result,
@@ -30,11 +70,11 @@ const runInputs = async (job: Job): Promise<Results> =>
           return results
         })
 
-        console.log(`Running pipes for ${job.id}`)
-        for (const pipe of job.pipes ?? []) {
-          results = await pipe(results)
+        if (job.pipes) {
+          console.log(`Running pipes for ${job.id}`)
+          results = await runPipes(results, job.pipes)
+          console.log(`Ran pipes for ${job.id}`)
         }
-        console.log(`Ran pipes for ${job.id}`)
 
         return results
       })().catch((e) => {
@@ -50,13 +90,36 @@ const runOutputs = async (job: Job, results: Results): Promise<void> => {
   return promiseRetry(
     (retry) =>
       (async () => {
-        if (results.length === 0) {
+        if (!results.length) {
           return
         }
 
         console.log(`Running outputs for ${job.id}`)
         await Promise.all(
-          _.map(job.outputs, async (output) => await output(job, results)),
+          _.map(job.outputs, async (outputConfig) => {
+            let output
+            let pipes: PipeReturn[] = []
+
+            if (isOutput(outputConfig)) {
+              output = outputConfig
+              pipes = []
+            } else {
+              output = outputConfig[0]
+              pipes = _.slice(outputConfig, 1) as PipeReturn[]
+            }
+
+            if (pipes.length) {
+              console.log(`Running pipes for ${job.id} output`)
+              results = await runPipes(results, pipes)
+              console.log(`Ran pipes for ${job.id} output`)
+            }
+
+            if (!results.length) {
+              return
+            }
+
+            await output(job, results)
+          }),
         )
         console.log(`Ran outputs for ${job.id}`)
       })().catch((e) => {
@@ -72,7 +135,7 @@ const runOutputs = async (job: Job, results: Results): Promise<void> => {
 const checkConfig = (config: Config) => {
   const { jobs } = config
 
-  if (jobs.length === 0) {
+  if (!jobs.length) {
     console.log('Error: No jobs to run, nothing to do')
     process.exit(1)
   }
@@ -130,7 +193,7 @@ const main = async () => {
           _.map(state[job.id].results, 'id'),
         )
 
-        if (newIds.length === 0) {
+        if (!newIds.length) {
           return
         }
 
