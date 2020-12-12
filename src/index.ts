@@ -11,7 +11,10 @@ const runInputs = async (job: Job): Promise<Results> =>
       (async () => {
         console.log(`Running inputs for ${job.id}`)
         const resultGroups = await Promise.all(
-          _.map(job.inputs, (input): Promise<Results> => input(job)),
+          _.map(
+            job.inputs,
+            async (input): Promise<Results> => await input(job),
+          ),
         )
         console.log(`Ran inputs for ${job.id}`)
 
@@ -52,7 +55,9 @@ const runOutputs = async (job: Job, results: Results): Promise<void> => {
         }
 
         console.log(`Running outputs for ${job.id}`)
-        await Promise.all(_.map(job.outputs, (output) => output(job, results)))
+        await Promise.all(
+          _.map(job.outputs, async (output) => await output(job, results)),
+        )
         console.log(`Ran outputs for ${job.id}`)
       })().catch((e) => {
         console.log(e)

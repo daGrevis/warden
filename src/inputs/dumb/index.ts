@@ -7,7 +7,7 @@ type Options = {
 const dumb: Input<Options | undefined> = (options?: Options) => {
   let index = -1
 
-  return async () => {
+  return () => {
     index += 1
 
     const data = options?.data
