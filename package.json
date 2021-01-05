@@ -2,7 +2,7 @@
   "name": "warden",
   "dependencies": {
     "@sendgrid/mail": "^7.4.0",
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
     "dotenv": "^8.2.0",
     "handlebars": "^4.7.6",
     "lodash": "^4.17.20",
