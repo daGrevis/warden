@@ -1,13 +1,13 @@
 # Warden
 
-Continuous Web Scraping Framework
+Web Scraping Framework for immediate and/or scheduled runs
 
 ![](https://github.com/daGrevis/warden/workflows/warden/badge.svg)
 
 ---
 
-Framework for easily creating web scrapers that continuously check for new
-results and notify user on changes.
+Framework for easily creating web scrapers that either run immediately and/or
+continuously check for new results and notify user on changes.
 
 For example, you're interested in news from [lobste.rs](https://lobste.rs/) and
 would like to receive daily email newsletter. You could use `lobsters` as input
@@ -45,13 +45,14 @@ It's also possible to quickly make a new input or output with TypeScript.
 Here's a more complicated example that scrapes [ss.com](https://www.ss.com/) for
 Audi, BMW and Mercedes with 3.0+ liter gasoline engine, manual transmission and
 price starting from 10k EUR. Then it notifies user by printing out to console
-and sending an email. It's scheduled to be run on every hour if it's 9-17 and
-weekday.
+and sending an email. It is run immediately and then scheduled to be run on
+every hour if it's 9-17 and weekday.
 
 ```ts
 {
   id: 'ss-audi-bmw-mercedes',
   name: 'SS Audi, BMW & Mercedes',
+  runNow: true,
   scheduleAt: '0 9-17 * * 1-5',
   inputs: ['audi', 'bmw', 'mercedes'].map(model =>
     ss({

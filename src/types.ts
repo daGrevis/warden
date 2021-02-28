@@ -46,6 +46,7 @@ type OutputReturn = ReturnType<Output>
 type Job = {
   id: string
   name: string
+  runNow?: boolean
   scheduleAt?: string
   inputs: (InputReturn | [InputReturn, ...PipeReturn[]])[]
   pipes?: PipeReturn[]

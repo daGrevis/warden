@@ -173,12 +173,13 @@ const main = async () => {
       results: _.keyBy(startResults, 'id'),
     }
 
-    if (!job.scheduleAt) {
+    if (job.runNow || !job.scheduleAt) {
       console.log(`Running ${job.id} at start once`)
 
       await runOutputs(job, startResults)
       console.log(`Ran ${job.id} at start`)
-    } else {
+    }
+    if(job.scheduleAt) {
       console.log(`Scheduling ${job.id} at ${job.scheduleAt}`)
 
       const schedulerJob = new schedule.Job(job.id, async () => {
