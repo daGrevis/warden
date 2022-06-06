@@ -1,6 +1,7 @@
 import _ from 'lodash'
 
 import { Input } from '../../types'
+import assert from '../../assert'
 import withBrowser from '../../withBrowser'
 
 type Options = {
@@ -38,7 +39,9 @@ const ycombinator: Input<Options | undefined> =
         _.map(_.chunk(rows, 2), async ([$story, $meta]): Promise<Result> => {
           const id = await $story.evaluate(($) => $.id)
 
-          const $link = await $story.$('.storylink')
+          const $link = await $story.$('.titlelink')
+
+          assert($link, 'Link element not found!')
 
           const $score = await $meta.$('.score')
 
@@ -51,8 +54,8 @@ const ycombinator: Input<Options | undefined> =
 
           return {
             id,
-            name: await $link!.evaluate(($) => $.textContent!),
-            url: await $link!.evaluate(($) => ($ as HTMLAnchorElement).href),
+            name: await $link.evaluate(($) => $.textContent!),
+            url: await $link.evaluate(($) => ($ as HTMLAnchorElement).href),
             extra: {
               score,
               commentsUrl: `${HOST}/item?id=${id}`,
