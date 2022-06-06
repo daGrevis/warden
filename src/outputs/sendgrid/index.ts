@@ -28,45 +28,43 @@ const MJML_OPTIONS = {
   minify: true,
 }
 
-const sendgrid: Output<Options> = (options: Options) => async (
-  job,
-  results,
-) => {
-  const { apiKey, sender, recipients, debug } = options
-  const template = options.template ?? './template.html'
-  const asMjml = options.asMjml ?? options.template === undefined
+const sendgrid: Output<Options> =
+  (options: Options) => async (job, results) => {
+    const { apiKey, sender, recipients, debug } = options
+    const template = options.template ?? './template.html'
+    const asMjml = options.asMjml ?? options.template === undefined
 
-  sendgridMail.setApiKey(apiKey)
+    sendgridMail.setApiKey(apiKey)
 
-  const templateFile = await fs.promises.readFile(
-    path.resolve(__dirname, template),
-    FILE_OPTIONS,
-  )
-
-  let html = handlebars.compile(templateFile)({ job, results })
-
-  if (asMjml) {
-    const mjmlResult = mjml2html(html, MJML_OPTIONS)
-
-    html = mjmlResult.html
-  }
-
-  if (debug) {
-    await fs.promises.writeFile(
-      path.resolve(__dirname, './debug-template.html'),
-      html,
+    const templateFile = await fs.promises.readFile(
+      path.resolve(__dirname, template),
       FILE_OPTIONS,
     )
-  }
 
-  if (recipients.length > 0) {
-    await sendgridMail.send({
-      to: recipients,
-      from: sender,
-      subject: job.name,
-      html,
-    })
+    let html = handlebars.compile(templateFile)({ job, results })
+
+    if (asMjml) {
+      const mjmlResult = mjml2html(html, MJML_OPTIONS)
+
+      html = mjmlResult.html
+    }
+
+    if (debug) {
+      await fs.promises.writeFile(
+        path.resolve(__dirname, './debug-template.html'),
+        html,
+        FILE_OPTIONS,
+      )
+    }
+
+    if (recipients.length > 0) {
+      await sendgridMail.send({
+        to: recipients,
+        from: sender,
+        subject: job.name,
+        html,
+      })
+    }
   }
-}
 
 export default sendgrid

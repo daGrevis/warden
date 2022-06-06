@@ -81,82 +81,81 @@ const createResult = (
   }
 }
 
-const coronavirus: Input<Options | undefined> = (
-  options?: Options,
-) => async () => {
-  let results: Result[] = []
+const coronavirus: Input<Options | undefined> =
+  (options?: Options) => async () => {
+    let results: Result[] = []
 
-  await withBrowser(async ({ page }) => {
-    await page.goto(URL)
+    await withBrowser(async ({ page }) => {
+      await page.goto(URL)
 
-    let countries: undefined | string[]
+      let countries: undefined | string[]
 
-    if (isOptionsForCountry(options)) {
-      countries = [options.country]
-    } else if (isOptionsForCountries(options)) {
-      countries = options.countries
-    } else {
-      countries = undefined
-    }
+      if (isOptionsForCountry(options)) {
+        countries = [options.country]
+      } else if (isOptionsForCountries(options)) {
+        countries = options.countries
+      } else {
+        countries = undefined
+      }
 
-    const rows = await Promise.all(
-      _.map(
-        await page.$$(
-          '#main_table_countries_today tr.even, #main_table_countries_today tr.odd',
-        ),
-        async ($row) =>
-          Promise.all(
-            _.map(await $row.$$('td'), async ($column) => getText($column)),
+      const rows = await Promise.all(
+        _.map(
+          await page.$$(
+            '#main_table_countries_today tr.even, #main_table_countries_today tr.odd',
           ),
-      ),
-    )
-
-    if (countries && countries.length > 0) {
-      const countryRows = _.filter(rows, (columns) =>
-        _.includes(countries, columns[ColumnIndex.Name]),
+          async ($row) =>
+            Promise.all(
+              _.map(await $row.$$('td'), async ($column) => getText($column)),
+            ),
+        ),
       )
 
-      assert(
-        countryRows.length === countries.length,
-        'Not all countries found!',
-      )
+      if (countries && countries.length > 0) {
+        const countryRows = _.filter(rows, (columns) =>
+          _.includes(countries, columns[ColumnIndex.Name]),
+        )
 
-      results = _.flatMap(countryRows, (columns) => {
-        const countryName = columns[ColumnIndex.Name]
+        assert(
+          countryRows.length === countries.length,
+          'Not all countries found!',
+        )
 
-        const infected = parseNumber(columns[ColumnIndex.Infected])
-        const deaths = parseNumber(columns[ColumnIndex.Deaths])
-        const recovered = parseNumber(columns[ColumnIndex.Recovered])
-        const tested = parseNumber(columns[ColumnIndex.Tested])
+        results = _.flatMap(countryRows, (columns) => {
+          const countryName = columns[ColumnIndex.Name]
 
-        return [
-          createResult(CounterType.Infected, countryName, infected),
-          createResult(CounterType.Deaths, countryName, deaths),
-          createResult(CounterType.Recovered, countryName, recovered),
-          createResult(CounterType.Tested, countryName, tested),
+          const infected = parseNumber(columns[ColumnIndex.Infected])
+          const deaths = parseNumber(columns[ColumnIndex.Deaths])
+          const recovered = parseNumber(columns[ColumnIndex.Recovered])
+          const tested = parseNumber(columns[ColumnIndex.Tested])
+
+          return [
+            createResult(CounterType.Infected, countryName, infected),
+            createResult(CounterType.Deaths, countryName, deaths),
+            createResult(CounterType.Recovered, countryName, recovered),
+            createResult(CounterType.Tested, countryName, tested),
+          ]
+        })
+      } else {
+        const counters = await page.$$('.maincounter-number span')
+
+        const infected = parseNumber(await getText(counters[0]))
+        const deaths = parseNumber(await getText(counters[1]))
+        const recovered = parseNumber(await getText(counters[2]))
+        const tested = _.sumBy(rows, (columns) =>
+          parseNumber(columns[ColumnIndex.Tested]),
+        )
+
+        results = [
+          createResult(CounterType.Infected, undefined, infected),
+          createResult(CounterType.Deaths, undefined, deaths),
+          createResult(CounterType.Recovered, undefined, recovered),
+          createResult(CounterType.Tested, undefined, tested),
         ]
-      })
-    } else {
-      const counters = await page.$$('.maincounter-number span')
+      }
+    })
 
-      const infected = parseNumber(await getText(counters[0]))
-      const deaths = parseNumber(await getText(counters[1]))
-      const recovered = parseNumber(await getText(counters[2]))
-      const tested = _.sumBy(rows, (columns) =>
-        parseNumber(columns[ColumnIndex.Tested]),
-      )
-
-      results = [
-        createResult(CounterType.Infected, undefined, infected),
-        createResult(CounterType.Deaths, undefined, deaths),
-        createResult(CounterType.Recovered, undefined, recovered),
-        createResult(CounterType.Tested, undefined, tested),
-      ]
-    }
-  })
-
-  return results
-}
+    return results
+  }
 
 export default coronavirus
 export { CounterType }

@@ -31,30 +31,27 @@ const isOptionsForTags = (options?: Options): options is OptionsForTags => {
   return options !== undefined && 'tags' in options
 }
 
-const lobsters: Input<Options | undefined> = (
-  options?: Options,
-) => async () => {
-  const section = options?.section ?? 'hottest'
+const lobsters: Input<Options | undefined> =
+  (options?: Options) => async () => {
+    const section = options?.section ?? 'hottest'
 
-  let results: Result[] = []
+    let results: Result[] = []
 
-  await withBrowser(async ({ page }) => {
-    let pageUrl
+    await withBrowser(async ({ page }) => {
+      let pageUrl
 
-    if (isOptionsForTags(options)) {
-      const { tags } = options
+      if (isOptionsForTags(options)) {
+        const { tags } = options
 
-      pageUrl = `${HOST}/t/${tags.join(',')}`
-    } else {
-      pageUrl = `${HOST}/${section === 'hottest' ? '' : section}`
-    }
+        pageUrl = `${HOST}/t/${tags.join(',')}`
+      } else {
+        pageUrl = `${HOST}/${section === 'hottest' ? '' : section}`
+      }
 
-    await page.goto(pageUrl)
+      await page.goto(pageUrl)
 
-    results = await Promise.all(
-      _.map(
-        await page.$$('.story'),
-        async ($story): Promise<Result> => {
+      results = await Promise.all(
+        _.map(await page.$$('.story'), async ($story): Promise<Result> => {
           const $url = await $story.$('.u-url')
           const $commentsUrl = await $story.$('.comments_label a')
           const $score = await $story.$('.score')
@@ -76,12 +73,11 @@ const lobsters: Input<Options | undefined> = (
               ),
             },
           }
-        },
-      ),
-    )
-  })
+        }),
+      )
+    })
 
-  return results
-}
+    return results
+  }
 
 export default lobsters

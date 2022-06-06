@@ -19,24 +19,23 @@ type Result = {
 
 const HOST = 'https://news.ycombinator.com'
 
-const ycombinator: Input<Options | undefined> = (
-  options?: Options,
-) => async () => {
-  const section = options?.section ?? 'hottest'
+const ycombinator: Input<Options | undefined> =
+  (options?: Options) => async () => {
+    const section = options?.section ?? 'hottest'
 
-  let results: Result[] = []
+    let results: Result[] = []
 
-  await withBrowser(async ({ page }) => {
-    const pageUrl = `${HOST}/${section === 'hottest' ? '' : section}`
+    await withBrowser(async ({ page }) => {
+      const pageUrl = `${HOST}/${section === 'hottest' ? '' : section}`
 
-    await page.goto(pageUrl)
+      await page.goto(pageUrl)
 
-    const rows = await page.$$('.itemlist tr.athing, .itemlist tr.athing + tr')
+      const rows = await page.$$(
+        '.itemlist tr.athing, .itemlist tr.athing + tr',
+      )
 
-    results = await Promise.all(
-      _.map(
-        _.chunk(rows, 2),
-        async ([$story, $meta]): Promise<Result> => {
+      results = await Promise.all(
+        _.map(_.chunk(rows, 2), async ([$story, $meta]): Promise<Result> => {
           const id = await $story.evaluate(($) => $.id)
 
           const $link = await $story.$('.storylink')
@@ -59,12 +58,11 @@ const ycombinator: Input<Options | undefined> = (
               commentsUrl: `${HOST}/item?id=${id}`,
             },
           }
-        },
-      ),
-    )
-  })
+        }),
+      )
+    })
 
-  return results
-}
+    return results
+  }
 
 export default ycombinator

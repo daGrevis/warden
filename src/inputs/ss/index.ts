@@ -107,61 +107,58 @@ const parseResults = async (page: Page, section: string) => {
 
   return _.reject(
     await Promise.all(
-      _.map(
-        rows,
-        async ($row: ElementHandle): Promise<Result | undefined> => {
-          const $anchor = await $row.$('.am')
+      _.map(rows, async ($row: ElementHandle): Promise<Result | undefined> => {
+        const $anchor = await $row.$('.am')
 
-          if (!$anchor) {
-            // If .am doesn't exist, we assume it's irrelevant for results.
-            return undefined
-          }
+        if (!$anchor) {
+          // If .am doesn't exist, we assume it's irrelevant for results.
+          return undefined
+        }
 
-          const href = await $anchor.evaluate(($) =>
-            ($ as HTMLAnchorElement).getAttribute('href'),
-          )
-          const url = `${HOST}${href}`
+        const href = await $anchor.evaluate(($) =>
+          ($ as HTMLAnchorElement).getAttribute('href'),
+        )
+        const url = `${HOST}${href}`
 
-          const idMatch = url.match(/([^\/]+)\.html$/)
-          assert(idMatch, 'Could not match id!')
-          const [, id] = idMatch
+        const idMatch = url.match(/([^\/]+)\.html$/)
+        assert(idMatch, 'Could not match id!')
+        const [, id] = idMatch
 
-          const name = getName(url, section)
+        const name = getName(url, section)
 
-          const description = await $anchor.evaluate(
-            ($) => ($ as HTMLAnchorElement).textContent,
-          )
-          assert(description, 'Could not find description!')
+        const description = await $anchor.evaluate(
+          ($) => ($ as HTMLAnchorElement).textContent,
+        )
+        assert(description, 'Could not find description!')
 
-          const $thumbnail = await $row.$('.msga2:nth-child(2) .isfoto')
-          assert($thumbnail, 'Could not find $thumbnail!')
-          const thumbnailUrl = await $thumbnail.evaluate(($) =>
-            ($ as HTMLImageElement).getAttribute('src'),
-          )
-          assert(thumbnailUrl, 'Could not find thumbnailUrl!')
-          const imageUrl = thumbnailUrl.replace('th2', '800')
+        const $thumbnail = await $row.$('.msga2:nth-child(2) .isfoto')
+        assert($thumbnail, 'Could not find $thumbnail!')
+        const thumbnailUrl = await $thumbnail.evaluate(($) =>
+          ($ as HTMLImageElement).getAttribute('src'),
+        )
+        assert(thumbnailUrl, 'Could not find thumbnailUrl!')
+        const imageUrl = thumbnailUrl.replace('th2', '800')
 
-          const cells = await $row.$$('td')
+        const cells = await $row.$$('td')
 
-          const $priceCell = _.last(cells)
-          assert($priceCell, 'Could not find $priceCell!')
-          const $priceAnchor = await $priceCell.$('a')
-          assert($priceAnchor, 'Could not find $priceAnchor!')
-          const price = await $priceAnchor.evaluate(($) => $.textContent)
-          assert(price, 'Could not find price!')
+        const $priceCell = _.last(cells)
+        assert($priceCell, 'Could not find $priceCell!')
+        const $priceAnchor = await $priceCell.$('a')
+        assert($priceAnchor, 'Could not find $priceAnchor!')
+        const price = await $priceAnchor.evaluate(($) => $.textContent)
+        assert(price, 'Could not find price!')
 
-          return {
-            id,
-            name,
-            url,
-            description,
-            imageUrl,
-            extra: {
-              price,
-            },
-          }
-        },
-      ),
+        return {
+          id,
+          name,
+          url,
+          description,
+          imageUrl,
+          extra: {
+            price,
+          },
+        }
+      }),
     ),
     _.isUndefined,
   ) as Result[]
