@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:bionic
+FROM mcr.microsoft.com/playwright:focal
 
 ENV NODE_ENV=production
 
