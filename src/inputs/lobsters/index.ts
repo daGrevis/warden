@@ -25,7 +25,7 @@ type Result = {
   }
 }
 
-const HOST = 'http://lobste.rs'
+const HOST = 'https://lobste.rs'
 
 const isOptionsForTags = (options?: Options): options is OptionsForTags => {
   return options !== undefined && 'tags' in options

@@ -21,7 +21,7 @@ type Result = {
   }
 }
 
-const HOST = 'http://old.reddit.com'
+const HOST = 'https://old.reddit.com'
 
 const parseUrl = (url: string) => {
   const { pathname } = new URL(url)
