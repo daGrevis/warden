@@ -40,7 +40,7 @@ enum ColumnIndex {
   Infected = 2,
   Deaths = 4,
   Recovered = 6,
-  Tested = 11,
+  Tested = 12,
 }
 
 const isOptionsForCountry = (options?: Options): options is OptionsForCountry =>
