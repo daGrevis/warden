@@ -39,7 +39,7 @@ const ycombinator: Input<Options | undefined> =
         _.map(_.chunk(rows, 2), async ([$story, $meta]): Promise<Result> => {
           const id = await $story.evaluate(($) => $.id)
 
-          const $link = await $story.$('.titlelink')
+          const $link = await $story.$('.titleline a')
 
           assert($link, 'Link element not found!')
 
