@@ -31,12 +31,10 @@ const ycombinator: Input<Options | undefined> =
 
       await page.goto(pageUrl)
 
-      const rows = await page.$$(
-        '.itemlist tr.athing, .itemlist tr.athing + tr',
-      )
+      const $rows = await page.$$('tr.athing, tr.athing + tr')
 
       results = await Promise.all(
-        _.map(_.chunk(rows, 2), async ([$story, $meta]): Promise<Result> => {
+        _.map(_.chunk($rows, 2), async ([$story, $meta]): Promise<Result> => {
           const id = await $story.evaluate(($) => $.id)
 
           const $link = await $story.$('.titleline a')
